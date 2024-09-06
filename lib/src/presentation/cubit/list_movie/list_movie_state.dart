@@ -14,12 +14,18 @@ final class ListMovieLoading extends ListMovieState {
 }
 
 final class ListMovieSuccess extends ListMovieState {
-  final MovieGenreDataEntity? movieGenreDataEntity;
+  final List<MovieGenreEntity> movies;
+  final String domainImage;
+  final int itemCount;
 
-  const ListMovieSuccess({required this.movieGenreDataEntity});
+  const ListMovieSuccess({
+    required this.movies,
+    required this.domainImage,
+    required this.itemCount,
+  });
 
   @override
-  List<Object?> get props => [movieGenreDataEntity];
+  List<Object?> get props => [movies, domainImage, itemCount];
 }
 
 final class ListMovieError extends ListMovieState {

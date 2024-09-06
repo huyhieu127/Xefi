@@ -16,11 +16,11 @@ class ToolbarBts extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           const Positioned(
-            top: 0.0,
+            top: 2.0,
             child: IndicatorTop(),
           ),
           Positioned.fill(
-            top: 8,
+            top: 12,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

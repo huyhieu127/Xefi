@@ -52,7 +52,7 @@ class _EpisodesBtsState extends State<EpisodesBts> {
                 Expanded(
                   child: DraggableScrollableSheet(
                     initialChildSize: 1.0,
-                    minChildSize: 0.9,
+                    minChildSize: 0.96,
                     builder: (BuildContext context,
                         ScrollController scrollController) {
                       var height = 0.0;

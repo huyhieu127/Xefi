@@ -4,6 +4,6 @@ import 'package:xefi/src/presentation/cubit/list_movie/list_movie_cubit.dart';
 final injectorListMovie = GetIt.instance;
 
 Future<void> initListMovieCubitInjections() async {
-  injectorListMovie.registerFactory<ListMovieCubit>(
+  injectorListMovie.registerLazySingleton<ListMovieCubit>(
       () => ListMovieCubit(injectorListMovie()));
 }
