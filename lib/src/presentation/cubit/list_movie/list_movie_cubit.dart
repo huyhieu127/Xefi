@@ -52,9 +52,8 @@ class ListMovieCubit extends Cubit<ListMovieState> {
             }
             _movies.addAll(movies);
             emit(ListMovieSuccess(
-              movies: _movies,
+              movies: _movies.toList(),
               domainImage: domainImage,
-              itemCount: _movies.length,
             ));
           }
         },
@@ -63,38 +62,4 @@ class ListMovieCubit extends Cubit<ListMovieState> {
       rethrow;
     }
   }
-
-// Future<void> ListMovie() async {
-//   try {
-//     if (hasReachedMax) return;
-//     if (state is! ListMovieSuccess) {
-//       emit(const ListMovieLoading());
-//     }
-//     final result = await _movieUseCase.ListMovie(page: _page);
-//
-//     result.fold(
-//       (error) => emit(ListMovieError(message: error.message)),
-//       (success) {
-//         // Increases the page number and adds the movies from the [success] response to the movie list.
-//         // If a movie already exists in the movie list, it will not be added again.
-//         // If the number of movies in the [success] response is less than 20, sets [hasReachedMax] to true.
-//         // Emits a [GetPopularMoviesLoaded] state with the updated movie list.
-//
-//         _page++;
-//         _newestList.addAll(
-//             success.where((movie) => _newestList.contains(movie) == false));
-//
-//         /// Checks if the number of movies in the [success] response is less than 20.
-//         /// If so, sets [hasReachedMax] to true.
-//         if ((success.length) < ApiConstants.limit) {
-//           hasReachedMax = true;
-//         }
-//
-//         emit(ListMovieSuccess(movies: List.of(_newestList)));
-//       },
-//     );
-//   } catch (_) {
-//     rethrow;
-//   }
-// }
 }
