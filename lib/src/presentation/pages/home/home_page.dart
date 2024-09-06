@@ -8,13 +8,14 @@ import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/helper/shadow_helper.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/core/utils/extension_utils.dart';
+import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/home/get_animation/get_animation_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/get_movie_series/get_movie_series_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/get_newest/get_newest_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/get_single_movie/get_single_movie_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/get_tv_shows/get_tv_shows_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/home_cubit.dart';
-import 'package:xefi/src/presentation/cubit/injector_home_cubit.dart';
+import 'package:xefi/src/presentation/cubit/cubit_injections.dart';
 import 'package:xefi/src/presentation/pages/home/components/home_genre_animation.dart';
 import 'package:xefi/src/presentation/pages/home/components/home_genre_movie_series.dart';
 import 'package:xefi/src/presentation/pages/home/components/home_genre_single_movie.dart';
@@ -38,19 +39,19 @@ class _HomePageState extends State<HomePage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-            create: (context) => injectorHome<GetNewestCubit>()..getNewest()),
+            create: (context) => injector<GetNewestCubit>()..getNewest()),
         BlocProvider(
             create: (context) =>
-                injectorHome<GetAnimationCubit>()..getAnimation()),
+                injector<GetAnimationCubit>()..getAnimation()),
         BlocProvider(
             create: (context) =>
-                injectorHome<GetMovieSeriesCubit>()..getMovieSeries()),
+                injector<GetMovieSeriesCubit>()..getMovieSeries()),
         BlocProvider(
             create: (context) =>
-                injectorHome<GetSingleMovieCubit>()..getSingleMovie()),
+                injector<GetSingleMovieCubit>()..getSingleMovie()),
         BlocProvider(
-            create: (context) => injectorHome<GetTvShowsCubit>()..getTvShows()),
-        BlocProvider(create: (context) => injectorHome<HomeCubit>())
+            create: (context) => injector<GetTvShowsCubit>()..getTvShows()),
+        BlocProvider(create: (context) => injector<HomeCubit>())
       ],
       child: BaseBackground(
         baseAppBar: BaseAppbar(

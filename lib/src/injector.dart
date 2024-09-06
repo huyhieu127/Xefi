@@ -5,13 +5,11 @@ import 'package:xefi/src/data/data_sources/remote/movie/movie_datasource_impl.da
 import 'package:xefi/src/data/repositories/movie/movie_repository_impl.dart';
 import 'package:xefi/src/domain/repositories/movie/movie_repository.dart';
 import 'package:xefi/src/domain/usecases/movie/movie_usecases.dart';
-import 'package:xefi/src/presentation/cubit/injector_home_cubit.dart';
-import 'package:xefi/src/presentation/cubit/injector_list_movie_cubit.dart';
-import 'package:xefi/src/presentation/cubit/injector_play_movie_cubit.dart';
+import 'package:xefi/src/presentation/cubit/cubit_injections.dart';
 
 final injector = GetIt.instance;
 
-Future<void> initInjections() async {
+Future<void> initGetItInjections() async {
   injector
     // Network
     ..registerLazySingleton<DioClient>(DioClient.new)
@@ -28,7 +26,5 @@ Future<void> initInjections() async {
     // UseCases
     ..registerLazySingleton<MovieUseCases>(() => MovieUseCases(injector()));
   //Cubit
-  initHomeCubitInjections();
-  initPlayMovieCubitInjections();
-  initListMovieCubitInjections();
+  cubitInjections();
 }

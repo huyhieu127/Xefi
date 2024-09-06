@@ -5,8 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
-import 'package:xefi/src/presentation/cubit/injector_home_cubit.dart';
-import 'package:xefi/src/presentation/cubit/injector_list_movie_cubit.dart';
+import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/list_movie/list_movie_cubit.dart';
 import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
@@ -28,12 +27,13 @@ class ListMoviePage extends StatefulWidget {
 class _ListMoviePageState extends State<ListMoviePage> {
   static const double _endReachedThreshold = 200;
 
+  final cubit = injector<ListMovieCubit>();
+
   late final ScrollController _controller = ScrollController();
   bool _isLoading = true;
 
   @override
   void initState() {
-    injectorListMovie.resetLazySingleton<ListMovieCubit>();
     super.initState();
     _controller.addListener(_scrollListener);
   }
@@ -50,22 +50,19 @@ class _ListMoviePageState extends State<ListMoviePage> {
         _controller.position.extentAfter < _endReachedThreshold;
     if (thresholdReached) {
       _isLoading = true;
-      injectorHome<ListMovieCubit>()
-          .getListMovie(movieGenre: widget.movieGenre);
+      cubit.getListMovie(movieGenre: widget.movieGenre);
     }
   }
 
   Future<void> _onRefresh() async {
     _isLoading = true;
-    injectorHome<ListMovieCubit>()
-        .getListMovie(movieGenre: widget.movieGenre, isRefresh: true);
+    cubit.getListMovie(movieGenre: widget.movieGenre, isRefresh: true);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => injectorHome<ListMovieCubit>()
-        ..getListMovie(movieGenre: widget.movieGenre),
+      create: (context) => cubit..getListMovie(movieGenre: widget.movieGenre),
       child: BaseBackground(
         baseAppBar: BaseAppbar(
           child: SafeArea(
@@ -94,8 +91,7 @@ class _ListMoviePageState extends State<ListMoviePage> {
         child: BlocBuilder<ListMovieCubit, ListMovieState>(
           builder: (context, state) {
             _isLoading = false;
-            final canLoadMore =
-                !(injectorListMovie<ListMovieCubit>().hasReachedMax);
+            final canLoadMore = !(cubit.hasReachedMax);
             if (state is ListMovieSuccess) {
               final movies = state.movies;
               final domainLoadImage = state.domainImage;

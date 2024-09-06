@@ -9,7 +9,7 @@ import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/utils/extension_utils.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
 import 'package:xefi/src/domain/entities/movie_detail/movie_detail_data_entity.dart';
-import 'package:xefi/src/presentation/cubit/injector_play_movie_cubit.dart';
+import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/play_movie/get_detail/get_detail_cubit.dart';
 import 'package:xefi/src/presentation/cubit/play_movie/play_movie_cubit.dart';
 import 'package:xefi/src/presentation/pages/play_movie/components/episodes_bts.dart';
@@ -31,23 +31,18 @@ class PlayMoviePage extends StatefulWidget {
 }
 
 class _PlayMoviePageState extends State<PlayMoviePage> {
-
-  @override
-  void initState() {
-    resetPlayMovieCubit();
-    super.initState();
-  }
+  final _cubit = injector<PlayMovieCubit>();
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => injectorPlayMovie<PlayMovieCubit>(),
+          create: (context) => _cubit,
         ),
         BlocProvider(
-          create: (context) => injectorPlayMovie<GetDetailCubit>()
-            ..getDetail(slugName: widget.slug),
+          create: (context) =>
+              injector<GetDetailCubit>()..getDetail(slugName: widget.slug),
         ),
       ],
       child: BaseBackground(
@@ -214,8 +209,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
                                   ),
                                   onPressed: () {
                                     final episodeCurrent =
-                                        injectorPlayMovie<PlayMovieCubit>()
-                                                .episodeCurrent ??
+                                        _cubit.episodeCurrent ??
                                             servers.first.episodes?.lastOrNull;
                                     showEpisodes(
                                       servers: servers,
@@ -522,7 +516,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
   }
 
   void changeEpisode({required EpisodeEntity episode}) {
-    injectorPlayMovie<PlayMovieCubit>().changeEpisode(episode: episode);
+    _cubit.changeEpisode(episode: episode);
   }
 }
 

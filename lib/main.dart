@@ -4,13 +4,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xefi/src/config/router/app_router.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/utils/datetime_utils.dart';
-import 'package:xefi/src/injector_app.dart';
+import 'package:xefi/src/injector.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 Future main() async {
   timeago.setLocaleMessages('vi', MyCustomMessagesTimeAgo());
   await dotenv.load(fileName: ".env");
-  initInjections();
+  initGetItInjections();
   runApp(MyApp());
 }
 
