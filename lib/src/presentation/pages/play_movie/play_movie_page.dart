@@ -31,6 +31,13 @@ class PlayMoviePage extends StatefulWidget {
 }
 
 class _PlayMoviePageState extends State<PlayMoviePage> {
+
+  @override
+  void initState() {
+    injectorPlayMovie.resetLazySingleton<PlayMovieCubit>();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -73,7 +80,6 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
     final servers = data?.servers ?? [];
     final heightMovie = context.screenSize().width * 9 / 16;
 
-    print("Init UI");
     return Stack(
       fit: StackFit.expand,
       children: [

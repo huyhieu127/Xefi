@@ -6,7 +6,7 @@ final injectorPlayMovie = GetIt.instance;
 
 Future<void> initPlayMovieCubitInjections() async {
   injectorPlayMovie
-    ..registerFactory<PlayMovieCubit>(() => PlayMovieCubit())
+    ..registerLazySingleton<PlayMovieCubit>(() => PlayMovieCubit())
     ..registerFactory<GetDetailCubit>(
         () => GetDetailCubit(injectorPlayMovie()));
 }
