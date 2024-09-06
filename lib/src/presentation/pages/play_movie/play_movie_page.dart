@@ -34,7 +34,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
 
   @override
   void initState() {
-    injectorPlayMovie.resetLazySingleton<PlayMovieCubit>();
+    resetPlayMovieCubit();
     super.initState();
   }
 

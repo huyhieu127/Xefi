@@ -10,3 +10,7 @@ Future<void> initPlayMovieCubitInjections() async {
     ..registerFactory<GetDetailCubit>(
         () => GetDetailCubit(injectorPlayMovie()));
 }
+
+Future<void> resetPlayMovieCubit() async {
+  injectorPlayMovie.resetLazySingleton<PlayMovieCubit>();
+}

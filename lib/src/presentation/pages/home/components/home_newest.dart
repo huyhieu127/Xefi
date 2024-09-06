@@ -217,7 +217,7 @@ class _HomeNewestState extends State<HomeNewest> {
         const SizedBox(height: 4),
         IgnorePointer(
           child: Text(
-            "${item.year}",
+            "Năm phát hành: ${item.year}",
             style: TextStyle(
               color: Colors.white,
               shadows: ShadowHelper.textShadow,
