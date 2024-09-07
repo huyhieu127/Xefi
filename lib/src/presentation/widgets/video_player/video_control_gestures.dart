@@ -11,6 +11,8 @@ abstract class VideoControlGestures {
 
   void tapToVideo();
 
+  void tapToBackgroundCenterControls();
+
   //Speed
   void setSpeed({required double speed});
 

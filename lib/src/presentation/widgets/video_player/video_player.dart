@@ -92,7 +92,6 @@ class _MoviePlayerState extends State<MoviePlayer> {
                     //showControls: true,
                     customControls: videoControls,
                   );
-                  print("togglePlay: Init Chewie");
                   final chewie = Chewie(controller: _chewieController);
                   videoControls?.bindUI(
                     videoPlayerController: _videoPlayerController,

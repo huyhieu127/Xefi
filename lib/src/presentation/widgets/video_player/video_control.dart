@@ -39,6 +39,7 @@ class VideoControls extends StatefulWidget {
     this.chewieController = chewieController;
     isBindController = true;
   }
+
   @override
   State<VideoControls> createState() => _VideoControlsState();
 }
@@ -58,6 +59,7 @@ class _VideoControlsState extends State<VideoControls>
   final StreamController<bool> _streamPlayStatus = StreamController<bool>();
   final StreamController<double> _streamVisibleControls =
       StreamController<double>();
+  bool isVisibleControls = false;
 
   Timer? _timer;
   final ValueNotifier<Duration?> _positionNotifier =
@@ -76,7 +78,6 @@ class _VideoControlsState extends State<VideoControls>
   @override
   void initState() {
     super.initState();
-    print("togglePlay: Init");
     _episodesNotifier = ValueNotifier(widget.episode);
     _videoPlayerController.addListener(() {
       _positionNotifier.value = _videoPlayerController.value.position;
@@ -85,7 +86,6 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void dispose() {
-    print("togglePlay: dispose");
     _streamHideThumbnail.close();
     _streamPlayStatus.close();
     _streamVisibleControls.close();
@@ -104,7 +104,6 @@ class _VideoControlsState extends State<VideoControls>
         stream: _streamHideThumbnail.stream,
         builder: (context, snapshot) {
           var isHideThumbnail = (snapshot.data ?? false) || !_isPortrait;
-          print("togglePlay: _streamHideThumbnail");
           return Stack(
             children: [
               Positioned.fill(
@@ -171,18 +170,18 @@ class _VideoControlsState extends State<VideoControls>
           stream: _streamVisibleControls.stream,
           builder: (context, snapshot) {
             var opacity = snapshot.data ?? 0.0;
-            print("togglePlay: _streamVisibleControls");
+            isVisibleControls = opacity == 1.0;
             return AnimatedOpacity(
               opacity: opacity,
               duration: const Duration(milliseconds: 500),
               child: Stack(
                 children: [
                   Positioned.fill(
-                    bottom: null,
-                    child: _widgetControlsTop(),
+                    child: _widgetControlsCenter(),
                   ),
                   Positioned.fill(
-                    child: _widgetControlsCenter(),
+                    bottom: null,
+                    child: _widgetControlsTop(),
                   ),
                   Positioned.fill(
                     top: null,
@@ -251,73 +250,80 @@ class _VideoControlsState extends State<VideoControls>
   }
 
   Widget _widgetControlsCenter() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.black54,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          height: 40,
-          width: 40,
-          child: IconButton(
-            onPressed: () {
-              rewind();
-            },
-            icon: const Icon(
-              Icons.skip_previous_rounded,
-              color: Colors.white,
-              size: 20,
+    return GestureDetector(
+      onTap: (){
+        tapToBackgroundCenterControls();
+      },
+      child: Container(
+        color: Colors.transparent,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              height: 40,
+              width: 40,
+              child: IconButton(
+                onPressed: () {
+                  rewind();
+                },
+                icon: const Icon(
+                  Icons.skip_previous_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 60),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.black54,
-            borderRadius: BorderRadius.circular(60),
-          ),
-          height: 60,
-          width: 60,
-          child: IconButton(
-            onPressed: () {
-              togglePlay();
-            },
-            icon: StreamBuilder<bool>(
-                stream: _streamPlayStatus.stream,
-                builder: (context, snapshot) {
-                  var isPlay = snapshot.data ?? false;
-                  print("togglePlay: _streamPlayStatus --- $isPlay");
-                  return Icon(
-                    isPlay ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 40,
-                  );
-                }),
-          ),
-        ),
-        const SizedBox(width: 60),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.black54,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          height: 40,
-          width: 40,
-          child: IconButton(
-            onPressed: () {
-              forward();
-            },
-            icon: const Icon(
-              Icons.skip_next_rounded,
-              color: Colors.white,
-              size: 20,
+            const SizedBox(width: 60),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(60),
+              ),
+              height: 60,
+              width: 60,
+              child: IconButton(
+                onPressed: () {
+                  togglePlay();
+                },
+                icon: StreamBuilder<bool>(
+                    stream: _streamPlayStatus.stream,
+                    builder: (context, snapshot) {
+                      var isPlay = snapshot.data ?? false;
+                      return Icon(
+                        isPlay ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 40,
+                      );
+                    }),
+              ),
             ),
-          ),
+            const SizedBox(width: 60),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              height: 40,
+              width: 40,
+              child: IconButton(
+                onPressed: () {
+                  forward();
+                },
+                icon: const Icon(
+                  Icons.skip_next_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -599,24 +605,6 @@ class _VideoControlsState extends State<VideoControls>
     );
   }
 
-  /// Methods
-  ///Animated
-  void startFadeOutTimer() {
-    _timer?.cancel(); // Hủy bỏ timer hiện tại nếu có
-    _timer = Timer(const Duration(seconds: 3), () {
-      if (!_streamVisibleControls.isClosed) {
-        _streamVisibleControls.add(0.0); // Bắt đầu fade out sau 5 giây
-      }
-    });
-  }
-
-  void resetFadeOutTimer() {
-    if (!_streamVisibleControls.isClosed) {
-      _streamVisibleControls.add(1.0); // Hiện lại widget khi có tương tác
-      startFadeOutTimer();
-    }
-  }
-
   @override
   void changeOrientation() {
     if (_isPortrait) {
@@ -640,13 +628,11 @@ class _VideoControlsState extends State<VideoControls>
   @override
   void togglePlay() {
     _streamHideThumbnail.add(true);
-    resetFadeOutTimer();
+    showControls();
     if (_chewieController.isPlaying) {
-      print("togglePlay: add - show - Play");
       _streamPlayStatus.add(false);
       _chewieController.pause();
     } else {
-      print("togglePlay: add - show - Pause");
       _streamPlayStatus.add(true);
       _chewieController.play();
     }
@@ -687,7 +673,7 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void forward() {
-    resetFadeOutTimer();
+    showControls();
     final duration = _videoPlayerController.value.duration.inSeconds;
     final current = _videoPlayerController.value.position.inSeconds;
     var fastForwardValue = current + _skipValue.inSeconds;
@@ -700,7 +686,7 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void rewind() {
-    resetFadeOutTimer();
+    showControls();
     final current = _videoPlayerController.value.position.inSeconds;
     var rewindValue = current - _skipValue.inSeconds;
     if (rewindValue < 0) {
@@ -715,7 +701,36 @@ class _VideoControlsState extends State<VideoControls>
     if (!_isPortrait) {
       hideSystemBars();
     }
-    resetFadeOutTimer();
+    showControls();
+  }
+
+  @override
+  void tapToBackgroundCenterControls() {
+    if (!_isPortrait) {
+      hideSystemBars();
+    }
+    hideControlsImmediately();
+  }
+
+  /// Methods
+  ///Animated
+  void showControls() {
+    if (!_streamVisibleControls.isClosed) {
+      _streamVisibleControls.add(1.0); // Hiện lại widget khi có tương tác
+      _timer?.cancel(); // Hủy bỏ timer hiện tại nếu có
+      _timer = Timer(const Duration(seconds: 3), () {
+        if (!_streamVisibleControls.isClosed) {
+          _streamVisibleControls.add(0.0); // Bắt đầu fade out sau 5 giây
+        }
+      });
+    }
+  }
+
+  void hideControlsImmediately() {
+    _timer?.cancel();
+    if (!_streamVisibleControls.isClosed) {
+      _streamVisibleControls.add(0.0);
+    }
   }
 }
 
