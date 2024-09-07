@@ -92,19 +92,22 @@ class _MoviePlayerState extends State<MoviePlayer> {
                     //showControls: true,
                     customControls: videoControls,
                   );
+                  print("togglePlay: Init Chewie");
+                  final chewie = Chewie(controller: _chewieController);
                   videoControls?.bindUI(
                     videoPlayerController: _videoPlayerController,
                     chewieController: _chewieController,
                   );
                   return AspectRatio(
                     aspectRatio: _videoPlayerController.value.aspectRatio,
-                    child: Chewie(controller: _chewieController),
+                    child: chewie,
                   );
                 }
                 return Stack(
                   children: [
                     CachedNetworkImage(
                       imageUrl: widget.thumbUrl,
+                      memCacheHeight: 400,
                       fit: BoxFit.cover,
                     ),
                     const Center(

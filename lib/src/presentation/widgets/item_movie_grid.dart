@@ -49,11 +49,12 @@ class ItemMovieGrid extends StatelessWidget {
           onTap: onTap,
           child: Stack(
             children: [
-              CachedNetworkImage(
-                imageUrl: posterUrl ?? "",
-                width: double.maxFinite,
-                height: double.maxFinite,
-                fit: BoxFit.cover,
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: posterUrl ?? "",
+                  fit: BoxFit.cover,
+                  memCacheHeight: 400,
+                ),
               ),
               Container(
                 decoration: const BoxDecoration(

@@ -72,6 +72,7 @@ class _HomeNewestState extends State<HomeNewest> {
   }
 
   _imageBg(List<MovieNewestEntity> list) {
+    final cacheWidth = context.screenSize().width.toInt();
     return BlocBuilder<HomeCubit, HomeState>(
       buildWhen: (p, c) {
         if (c is HomePagerIndicator && p is HomePagerIndicator) {
@@ -86,13 +87,13 @@ class _HomeNewestState extends State<HomeNewest> {
           var item = list[state.currentIndex];
           return CachedNetworkImage(
             imageUrl: item.thumbUrl ?? "",
-            fit: BoxFit.cover,
-            width: context.screenSize().width,
-            height: context.screenSize().width,
+            fit: BoxFit.contain,
+            memCacheHeight: cacheWidth,
             fadeInCurve: Curves.easeIn,
             fadeInDuration: const Duration(milliseconds: 500),
             fadeOutCurve: Curves.easeOut,
             fadeOutDuration: const Duration(milliseconds: 500),
+
           );
         }
         return const SizedBox();
@@ -140,6 +141,7 @@ class _HomeNewestState extends State<HomeNewest> {
       itemCount: list.length,
       itemBuilder: (context, itemIndex, pageViewIndex) {
         var item = list[itemIndex];
+        final cacheWidth = context.screenSize().width.toInt();
         return ShaderMask(
           shaderCallback: (rect) {
             return const LinearGradient(
@@ -157,8 +159,7 @@ class _HomeNewestState extends State<HomeNewest> {
           blendMode: BlendMode.dstIn,
           child: CachedNetworkImage(
             imageUrl: item.thumbUrl ?? "",
-            width: context.screenSize().width,
-            height: context.screenSize().width,
+            memCacheHeight: cacheWidth,
             fit: BoxFit.cover,
           ),
         );

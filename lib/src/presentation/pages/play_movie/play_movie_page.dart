@@ -180,6 +180,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
                         child: CachedNetworkImage(
                           imageUrl: movie?.posterUrl ?? "",
                           fit: BoxFit.cover,
+                          memCacheHeight: 400,
                         ),
                       ),
                     ),
@@ -437,6 +438,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
           top: context.padding().top / 2,
           child: CachedNetworkImage(
             imageUrl: thumbUrl,
+            memCacheHeight: 400,
             fit: BoxFit.cover,
           ),
         ),

@@ -31,6 +31,7 @@ class BaseBackground extends StatelessWidget {
                 child: Image.asset(
                   Assets.images.bgDarkMode1.path,
                   fit: BoxFit.fill,
+                  cacheHeight: context.screenSize().height.toInt(),
                 ),
               ),
             ),

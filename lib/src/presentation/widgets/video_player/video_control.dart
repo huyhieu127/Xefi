@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/utils/extension_utils.dart';
+import 'package:xefi/src/core/utils/screen_utils.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_control_gestures.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_player_fullscreen.dart';
@@ -38,9 +39,6 @@ class VideoControls extends StatefulWidget {
     this.chewieController = chewieController;
     isBindController = true;
   }
-
-  void dispose() {}
-
   @override
   State<VideoControls> createState() => _VideoControlsState();
 }
@@ -78,6 +76,7 @@ class _VideoControlsState extends State<VideoControls>
   @override
   void initState() {
     super.initState();
+    print("togglePlay: Init");
     _episodesNotifier = ValueNotifier(widget.episode);
     _videoPlayerController.addListener(() {
       _positionNotifier.value = _videoPlayerController.value.position;
@@ -86,6 +85,7 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void dispose() {
+    print("togglePlay: dispose");
     _streamHideThumbnail.close();
     _streamPlayStatus.close();
     _streamVisibleControls.close();
@@ -104,6 +104,7 @@ class _VideoControlsState extends State<VideoControls>
         stream: _streamHideThumbnail.stream,
         builder: (context, snapshot) {
           var isHideThumbnail = (snapshot.data ?? false) || !_isPortrait;
+          print("togglePlay: _streamHideThumbnail");
           return Stack(
             children: [
               Positioned.fill(
@@ -136,6 +137,7 @@ class _VideoControlsState extends State<VideoControls>
           CachedNetworkImage(
             imageUrl: widget.thumbUrl,
             fit: BoxFit.cover,
+            memCacheHeight: 400,
           ),
           Center(
             child: Container(
@@ -169,6 +171,7 @@ class _VideoControlsState extends State<VideoControls>
           stream: _streamVisibleControls.stream,
           builder: (context, snapshot) {
             var opacity = snapshot.data ?? 0.0;
+            print("togglePlay: _streamVisibleControls");
             return AnimatedOpacity(
               opacity: opacity,
               duration: const Duration(milliseconds: 500),
@@ -270,7 +273,7 @@ class _VideoControlsState extends State<VideoControls>
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 60),
         Container(
           decoration: BoxDecoration(
             color: Colors.black54,
@@ -285,16 +288,17 @@ class _VideoControlsState extends State<VideoControls>
             icon: StreamBuilder<bool>(
                 stream: _streamPlayStatus.stream,
                 builder: (context, snapshot) {
-                  var bool = !_chewieController.isPlaying;
+                  var isPlay = snapshot.data ?? false;
+                  print("togglePlay: _streamPlayStatus --- $isPlay");
                   return Icon(
-                    bool ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                    isPlay ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     color: Colors.white,
                     size: 40,
                   );
                 }),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 60),
         Container(
           decoration: BoxDecoration(
             color: Colors.black54,
@@ -390,9 +394,9 @@ class _VideoControlsState extends State<VideoControls>
               final episodes =
                   this.widget.servers.first.episodes?.reversed.toList() ?? [];
               final double position = episodes
-                      .indexWhere(
-                          (entity) => entity.slug == this.widget.episode.slug)
-                      .toDouble();
+                  .indexWhere(
+                      (entity) => entity.slug == this.widget.episode.slug)
+                  .toDouble();
               _scrollEpisodesController.jumpTo(position * height);
             }
           };
@@ -638,10 +642,12 @@ class _VideoControlsState extends State<VideoControls>
     _streamHideThumbnail.add(true);
     resetFadeOutTimer();
     if (_chewieController.isPlaying) {
-      _streamPlayStatus.add(true);
+      print("togglePlay: add - show - Play");
+      _streamPlayStatus.add(false);
       _chewieController.pause();
     } else {
-      _streamPlayStatus.add(false);
+      print("togglePlay: add - show - Pause");
+      _streamPlayStatus.add(true);
       _chewieController.play();
     }
   }
@@ -706,6 +712,9 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void tapToVideo() {
+    if (!_isPortrait) {
+      hideSystemBars();
+    }
     resetFadeOutTimer();
   }
 }
