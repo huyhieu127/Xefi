@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/utils/extension_utils.dart';
 import 'package:xefi/src/core/utils/screen_utils.dart';
@@ -14,30 +15,33 @@ import 'package:xefi/src/presentation/widgets/video_player/video_control_gesture
 import 'package:xefi/src/presentation/widgets/video_player/video_player_fullscreen.dart';
 
 class VideoControls extends StatefulWidget {
-  final String thumbUrl;
-  final EpisodeEntity episode;
-  final List<ServerEntity> servers;
-  final Function(EpisodeEntity) onChangeEpisode;
-
   VideoControls({
     super.key,
-    required this.thumbUrl,
-    required this.episode,
-    required this.servers,
-    required this.onChangeEpisode,
   });
 
   late ChewieController chewieController;
   late VideoPlayerController videoPlayerController;
   bool isBindController = false;
+  late String thumbUrl;
+  late EpisodeEntity episode;
+  late List<ServerEntity> servers;
+  late Function(EpisodeEntity) onChangeEpisode;
 
   void bindUI({
     required VideoPlayerController videoPlayerController,
     required ChewieController chewieController,
+    required String thumbUrl,
+    required EpisodeEntity episode,
+    required List<ServerEntity> servers,
+    required Function(EpisodeEntity) onChangeEpisode,
   }) {
     this.videoPlayerController = videoPlayerController;
     this.chewieController = chewieController;
     isBindController = true;
+    this.thumbUrl = thumbUrl;
+    this.episode = episode;
+    this.servers = servers;
+    this.onChangeEpisode = onChangeEpisode;
   }
 
   @override
@@ -75,8 +79,11 @@ class _VideoControlsState extends State<VideoControls>
   final ValueNotifier<bool> _showSpeedNotifier = ValueNotifier(false);
   final ValueNotifier<double> _speedNotifier = ValueNotifier(1);
 
+  late bool _isPlayingWhenOpen;
+
   @override
   void initState() {
+    _isPlayingWhenOpen = _chewieController.isPlaying; //Need for to landscape
     super.initState();
     _episodesNotifier = ValueNotifier(widget.episode);
     _videoPlayerController.addListener(() {
@@ -89,6 +96,7 @@ class _VideoControlsState extends State<VideoControls>
     _streamHideThumbnail.close();
     _streamPlayStatus.close();
     _streamVisibleControls.close();
+    updateWakelockPlus(enable: false);
     super.dispose();
   }
 
@@ -142,10 +150,10 @@ class _VideoControlsState extends State<VideoControls>
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.black54,
-                borderRadius: BorderRadius.circular(60),
+                borderRadius: BorderRadius.circular(36),
               ),
-              height: 60,
-              width: 60,
+              height: 72,
+              width: 72,
               child: IconButton(
                 onPressed: () {
                   togglePlay();
@@ -251,7 +259,7 @@ class _VideoControlsState extends State<VideoControls>
 
   Widget _widgetControlsCenter() {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         tapToBackgroundCenterControls();
       },
       child: Container(
@@ -263,10 +271,10 @@ class _VideoControlsState extends State<VideoControls>
             Container(
               decoration: BoxDecoration(
                 color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(26),
               ),
-              height: 40,
-              width: 40,
+              height: 52,
+              width: 52,
               child: IconButton(
                 onPressed: () {
                   rewind();
@@ -282,10 +290,10 @@ class _VideoControlsState extends State<VideoControls>
             Container(
               decoration: BoxDecoration(
                 color: Colors.black54,
-                borderRadius: BorderRadius.circular(60),
+                borderRadius: BorderRadius.circular(36),
               ),
-              height: 60,
-              width: 60,
+              height: 72,
+              width: 72,
               child: IconButton(
                 onPressed: () {
                   togglePlay();
@@ -293,7 +301,7 @@ class _VideoControlsState extends State<VideoControls>
                 icon: StreamBuilder<bool>(
                     stream: _streamPlayStatus.stream,
                     builder: (context, snapshot) {
-                      var isPlay = snapshot.data ?? false;
+                      var isPlay = snapshot.data ?? _isPlayingWhenOpen;
                       return Icon(
                         isPlay ? Icons.pause_rounded : Icons.play_arrow_rounded,
                         color: Colors.white,
@@ -306,10 +314,10 @@ class _VideoControlsState extends State<VideoControls>
             Container(
               decoration: BoxDecoration(
                 color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(26),
               ),
-              height: 40,
-              width: 40,
+              height: 52,
+              width: 52,
               child: IconButton(
                 onPressed: () {
                   forward();
@@ -606,9 +614,9 @@ class _VideoControlsState extends State<VideoControls>
   }
 
   @override
-  void changeOrientation() {
+  void changeOrientation() async {
     if (_isPortrait) {
-      Navigator.push(
+      final result = await Navigator.push(
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -620,8 +628,10 @@ class _VideoControlsState extends State<VideoControls>
           reverseTransitionDuration: Duration.zero,
         ),
       );
+      if (!context.mounted) return;
+      updatePlayState(isPlaying: result); //Need when back to portrait
     } else {
-      Navigator.pop(context);
+      Navigator.pop(context, _chewieController.isPlaying);
     }
   }
 
@@ -630,10 +640,12 @@ class _VideoControlsState extends State<VideoControls>
     _streamHideThumbnail.add(true);
     showControls();
     if (_chewieController.isPlaying) {
-      _streamPlayStatus.add(false);
+      updateWakelockPlus(enable: false);
+      updatePlayState(isPlaying: false);
       _chewieController.pause();
     } else {
-      _streamPlayStatus.add(true);
+      updateWakelockPlus(enable: true);
+      updatePlayState(isPlaying: true);
       _chewieController.play();
     }
   }
@@ -713,13 +725,15 @@ class _VideoControlsState extends State<VideoControls>
   }
 
   /// Methods
-  ///Animated
   void showControls() {
     if (!_streamVisibleControls.isClosed) {
       _streamVisibleControls.add(1.0); // Hiện lại widget khi có tương tác
       _timer?.cancel(); // Hủy bỏ timer hiện tại nếu có
-      _timer = Timer(const Duration(seconds: 3), () {
+      _timer = Timer(const Duration(seconds: 2), () {
         if (!_streamVisibleControls.isClosed) {
+          if (!_isPortrait) {
+            hideSystemBars();
+          }
           _streamVisibleControls.add(0.0); // Bắt đầu fade out sau 5 giây
         }
       });
@@ -730,6 +744,22 @@ class _VideoControlsState extends State<VideoControls>
     _timer?.cancel();
     if (!_streamVisibleControls.isClosed) {
       _streamVisibleControls.add(0.0);
+    }
+  }
+
+  void updatePlayState({required bool isPlaying}) {
+    _streamPlayStatus.add(isPlaying);
+  }
+
+  Future<void> updateWakelockPlus({required bool enable}) async {
+    if (enable) {
+      if (!(await WakelockPlus.enabled)) {
+        await WakelockPlus.enable();
+      }
+    } else {
+      if (await WakelockPlus.enabled) {
+        await WakelockPlus.disable();
+      }
     }
   }
 }

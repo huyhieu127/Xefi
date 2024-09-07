@@ -28,7 +28,7 @@ class _MoviePlayerState extends State<MoviePlayer> {
 
   late VideoPlayerController _videoPlayerController;
   late ChewieController _chewieController;
-  VideoControls? videoControls;
+  final VideoControls _videoControls = VideoControls();
 
   late Future<void>? _initializeVideoPlayerFuture;
   final double _ratioMovie = 16 / 9;
@@ -75,14 +75,6 @@ class _MoviePlayerState extends State<MoviePlayer> {
               future: _initializeVideoPlayerFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
-                  videoControls = VideoControls(
-                    thumbUrl: widget.thumbUrl,
-                    episode: _episodeCurrent ?? const EpisodeEntity(),
-                    servers: widget.servers,
-                    onChangeEpisode: (episode) {
-                      changeEpisode(episode: episode);
-                    },
-                  );
                   _chewieController = ChewieController(
                     videoPlayerController: _videoPlayerController,
                     aspectRatio: _videoPlayerController.value.aspectRatio,
@@ -90,16 +82,21 @@ class _MoviePlayerState extends State<MoviePlayer> {
                     looping: false,
                     autoPlay: false,
                     //showControls: true,
-                    customControls: videoControls,
+                    customControls: _videoControls,
                   );
-                  final chewie = Chewie(controller: _chewieController);
-                  videoControls?.bindUI(
+                  _videoControls.bindUI(
                     videoPlayerController: _videoPlayerController,
                     chewieController: _chewieController,
+                    thumbUrl: widget.thumbUrl,
+                    episode: _episodeCurrent ?? const EpisodeEntity(),
+                    servers: widget.servers,
+                    onChangeEpisode: (episode) {
+                      changeEpisode(episode: episode);
+                    },
                   );
                   return AspectRatio(
                     aspectRatio: _videoPlayerController.value.aspectRatio,
-                    child: chewie,
+                    child: Chewie(controller: _chewieController),
                   );
                 }
                 return Stack(

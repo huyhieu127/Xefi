@@ -95,48 +95,50 @@ class _ListMoviePageState extends State<ListMoviePage> {
             if (state is ListMovieSuccess) {
               final movies = state.movies;
               final domainLoadImage = state.domainImage;
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: CustomScrollView(
-                  controller: _controller,
-                  slivers: [
-                    const SliverAppBar(
-                      backgroundColor: Colors.transparent,
-                      toolbarHeight: 0,
-                    ),
-                    CupertinoSliverRefreshControl(
-                      onRefresh: _onRefresh,
-                    ),
-                    SliverGrid.builder(
-                      itemCount: movies.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                        crossAxisCount: 2,
-                        childAspectRatio: 3 / 4,
-                      ),
-                      itemBuilder: (BuildContext context, int index) {
-                        final item = movies[index];
-                        return ItemMovieGrid(
-                          posterUrl: '$domainLoadImage/${item.posterUrl}',
-                          name: item.name,
-                          originName: item.originName,
-                          year: item.year,
-                          time: item.time,
-                          episodeCurrent: item.episodeCurrent,
-                          quality: item.quality,
-                          lang: item.lang,
-                          isCinema: item.chieuRap,
-                          modifiedTime: item.modified?.time,
-                          onTap: () {
-                            navigateToDetail(
-                                context: context, movieGenre: item);
-                          },
-                        );
-                      },
-                    ),
-                    SliverToBoxAdapter(
+              return CustomScrollView(
+                controller: _controller,
+                slivers: [
+                  const SliverAppBar(
+                    backgroundColor: Colors.transparent,
+                    toolbarHeight: 0,
+                  ),
+                  CupertinoSliverRefreshControl(
+                    onRefresh: _onRefresh,
+                  ),
+                  SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverGrid.builder(
+                        itemCount: movies.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: 16.0,
+                          mainAxisSpacing: 16.0,
+                          crossAxisCount: 2,
+                          childAspectRatio: 3 / 4,
+                        ),
+                        itemBuilder: (BuildContext context, int index) {
+                          final item = movies[index];
+                          return ItemMovieGrid(
+                            posterUrl: '$domainLoadImage/${item.posterUrl}',
+                            name: item.name,
+                            originName: item.originName,
+                            year: item.year,
+                            time: item.time,
+                            episodeCurrent: item.episodeCurrent,
+                            quality: item.quality,
+                            lang: item.lang,
+                            isCinema: item.chieuRap,
+                            modifiedTime: item.modified?.time,
+                            onTap: () {
+                              navigateToDetail(
+                                  context: context, movieGenre: item);
+                            },
+                          );
+                        },
+                      )),
+                  SliverToBoxAdapter(
+                    child: SafeArea(
+                      top: false,
                       child: canLoadMore
                           ? Container(
                               padding: const EdgeInsets.all(24),
@@ -148,8 +150,8 @@ class _ListMoviePageState extends State<ListMoviePage> {
                             )
                           : const SizedBox(),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               );
             }
             return const Center(

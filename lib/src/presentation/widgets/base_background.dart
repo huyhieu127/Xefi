@@ -17,7 +17,7 @@ class BaseBackground extends StatelessWidget {
       appBar: baseAppBar,
       body: Stack(
         children: [
-          Positioned(
+          Positioned.fill(
             top: 0,
             bottom: 0,
             child: BackdropFilter(

@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xefi/src/config/router/app_router.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/utils/datetime_utils.dart';
+import 'package:xefi/src/core/utils/screen_utils.dart';
 import 'package:xefi/src/injector.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -12,6 +13,7 @@ Future main() async {
   await dotenv.load(fileName: ".env");
   initGetItInjections();
   runApp(MyApp());
+  showSystemBars();
 }
 
 class MyApp extends StatelessWidget {
