@@ -38,6 +38,7 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   late EpisodeEntity episode;
   late List<ServerEntity> servers;
 
+  double speed = 1;
   bool isPortrait = true;
 
   //Update data
@@ -66,6 +67,13 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
     if (episode != this.episode) {
       this.episode = episode;
       emit(VideoPlayerChangeEpisode(episode: episode));
+    }
+  }
+
+  void changeSpeed({required double speed}) {
+    if (speed != this.speed) {
+      this.speed = speed;
+      emit(VideoPlayerChangeSpeed(speed: speed));
     }
   }
 }

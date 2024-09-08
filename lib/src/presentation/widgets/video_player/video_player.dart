@@ -50,6 +50,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
     _cubit.videoPlayerController = VideoPlayerController.networkUrl(
         Uri.parse(_cubit.episode.linkM3u8 ?? ""));
     _cubit.videoPlayerController.initialize().then((_) {
+
+      // Create chewie;
       _cubit.chewieController = ChewieController(
         videoPlayerController: _cubit.videoPlayerController,
         aspectRatio: _cubit.videoPlayerController.value.aspectRatio,
@@ -58,6 +60,17 @@ class _VideoPlayerState extends State<VideoPlayer> {
         autoPlay: false,
         showControls: false,
       );
+
+      //Listener get duration
+      _cubit.videoPlayerController.addListener(() {
+        final buffered = _cubit.videoPlayerController.value.buffered;
+        _cubit.durationControlCubit.updateDuration(
+          position: _cubit.videoPlayerController.value.position,
+          duration: _cubit.videoPlayerController.value.duration,
+          buffered: buffered.isNotEmpty ? buffered.last.end : Duration.zero,
+        );
+      });
+
       _cubit.initialControllerCubit.videoControllerInitialized(episode: episodeCurrent);
     });
   }

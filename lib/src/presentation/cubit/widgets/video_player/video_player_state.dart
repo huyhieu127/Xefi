@@ -17,4 +17,12 @@ final class VideoPlayerChangeEpisode extends VideoPlayerState {
   @override
   List<Object> get props => [episode];
 }
+final class VideoPlayerChangeSpeed extends VideoPlayerState {
+  final double speed;
+
+  const VideoPlayerChangeSpeed({required this.speed});
+
+  @override
+  List<Object> get props => [speed];
+}
 

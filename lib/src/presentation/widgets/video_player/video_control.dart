@@ -18,6 +18,8 @@ import 'package:xefi/src/presentation/cubit/widgets/video_player/play_control/pl
 import 'package:xefi/src/presentation/cubit/widgets/video_player/video_player_cubit.dart';
 import 'package:xefi/src/presentation/cubit/widgets/video_player/visibilitity_thumbnail/visibility_thumbnail_cubit.dart';
 import 'package:xefi/src/presentation/cubit/widgets/video_player/visibility_controls/visibility_controls_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/visibility_episodes/visibility_episodes_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/visibility_speeds/visibility_speeds_cubit.dart';
 import 'package:xefi/src/presentation/widgets/video_player/frame_video_player.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_control_gestures.dart';
 
@@ -51,26 +53,8 @@ class _VideoControlsState extends State<VideoControls>
 
   final ScrollController _scrollEpisodesController = ScrollController();
   FrameCallback? _frameCallback;
-  final ValueNotifier<bool> _showEpisodesNotifier = ValueNotifier(false);
-  late ValueNotifier<EpisodeEntity> _episodesNotifier;
 
   final List<double> speeds = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
-  final ValueNotifier<bool> _showSpeedNotifier = ValueNotifier(false);
-  final ValueNotifier<double> _speedNotifier = ValueNotifier(1);
-
-  @override
-  void initState() {
-    super.initState();
-    _episodesNotifier = ValueNotifier(_episode);
-    _videoPlayerController.addListener(() {
-      final buffered = _videoPlayerController.value.buffered;
-      _cubit.durationControlCubit.updateDuration(
-        position: _videoPlayerController.value.position,
-        duration: _videoPlayerController.value.duration,
-        buffered: buffered.isNotEmpty ? buffered.last.end : Duration.zero,
-      );
-    });
-  }
 
   @override
   void dispose() {
@@ -89,7 +73,8 @@ class _VideoControlsState extends State<VideoControls>
             bloc: _cubit.initialControllerCubit,
             listener: (context, state) {
               if (state is ControllerInitialized) {
-                _cubit.visibilityThumbnailCubit.setVisibilityThumbnail(isVisible: true);
+                _cubit.visibilityThumbnailCubit
+                    .setVisibilityThumbnail(isVisible: true);
               }
             },
           ),
@@ -104,7 +89,7 @@ class _VideoControlsState extends State<VideoControls>
             ),
             Positioned.fill(
               right: null,
-              child: _widgetEpisodes(servers: _servers),
+              child: _widgetEpisodes(),
             ),
             Positioned.fill(
               left: null,
@@ -122,7 +107,6 @@ class _VideoControlsState extends State<VideoControls>
       bloc: _cubit.visibilityThumbnailCubit,
       builder: (context, state) {
         var isVisible = state is VisibilityThumbnail ? state.isVisible : true;
-        print("visibilityThumbnailCubit $isVisible ${state.runtimeType}");
         return Visibility(
           visible: isVisible,
           child: Stack(
@@ -343,9 +327,9 @@ class _VideoControlsState extends State<VideoControls>
                     var duration = _videoPlayerController.value.duration;
 
                     final buffered = _videoPlayerController.value.buffered;
-                    var bufferedDuration = buffered.isNotEmpty ? buffered
-                        .last.end : Duration.zero;
-                    if(state is DurationControl){
+                    var bufferedDuration =
+                        buffered.isNotEmpty ? buffered.last.end : Duration.zero;
+                    if (state is DurationControl) {
                       position = state.position;
                       duration = state.duration;
                       bufferedDuration = state.buffered;
@@ -392,29 +376,29 @@ class _VideoControlsState extends State<VideoControls>
     );
   }
 
-  Widget _widgetEpisodes({required List<ServerEntity> servers}) {
-    final episodes = servers.first.episodes?.reversed.toList() ?? [];
-    return ValueListenableBuilder<bool>(
-      valueListenable: _showEpisodesNotifier,
-      builder: (context, value, widget) {
+  Widget _widgetEpisodes() {
+    final episodes = _servers.first.episodes?.reversed.toList() ?? [];
+    return BlocBuilder<VisibilityEpisodesCubit, VisibilityEpisodesState>(
+      bloc: _cubit.visibilityEpisodesCubit,
+      builder: (context, state) {
         const height = 50.0;
-        if (value && _frameCallback == null) {
+        var isVisible = !_cubit.isPortrait &&
+            state is VisibilityEpisodesControl &&
+            state.isVisible;
+        if (isVisible && _frameCallback == null) {
           _frameCallback = (callback) {
-            var isShow = _showEpisodesNotifier.value;
-            if (isShow) {
-              final episodes =
-                  this._servers.first.episodes?.reversed.toList() ?? [];
+            if (isVisible) {
+              final episodes = _servers.first.episodes?.reversed.toList() ?? [];
               final double position = episodes
-                  .indexWhere((entity) => entity.slug == this._episode.slug)
+                  .indexWhere((entity) => entity.slug == _episode.slug)
                   .toDouble();
               _scrollEpisodesController.jumpTo(position * height);
             }
           };
           WidgetsBinding.instance.addPostFrameCallback(_frameCallback!);
         }
-
         return Visibility(
-          visible: value,
+          visible: isVisible,
           child: Container(
             color: Colors.black87,
             width: 300,
@@ -463,11 +447,13 @@ class _VideoControlsState extends State<VideoControls>
                       itemBuilder: (context, index) {
                         final episode = episodes[index];
                         final slug = episode.slug;
-                        return ValueListenableBuilder(
-                          valueListenable: _episodesNotifier,
-                          builder:
-                              (BuildContext context, value, Widget? child) {
-                            final isSelected = slug == value.slug;
+                        return BlocBuilder(
+                          bloc: _cubit,
+                          builder: (context, state) {
+                            var slugCurrent = state is VideoPlayerChangeEpisode
+                                ? state.episode.slug
+                                : _cubit.episode.slug;
+                            final isSelected = slug == slugCurrent;
                             return GestureDetector(
                               onTap: () {
                                 setEpisode(episode: episode);
@@ -511,11 +497,14 @@ class _VideoControlsState extends State<VideoControls>
   }
 
   Widget _widgetSpeeds({required List<double> speeds}) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _showSpeedNotifier,
-      builder: (context, value, widget) {
+    return BlocBuilder<VisibilitySpeedsCubit, VisibilitySpeedsState>(
+      bloc: _cubit.visibilitySpeedsCubit,
+      builder: (context, state) {
+        var isVisible = !_cubit.isPortrait &&
+            state is VisibilitySpeedsControl &&
+            state.isVisible;
         return Visibility(
-          visible: value,
+          visible: isVisible,
           child: Container(
             color: Colors.black87,
             width: 250,
@@ -565,10 +554,14 @@ class _VideoControlsState extends State<VideoControls>
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
                           final speed = speeds[index];
-                          return ValueListenableBuilder(
-                              valueListenable: _speedNotifier,
-                              builder: (context, value, widget) {
-                                final isSelected = speed == value;
+                          return BlocBuilder(
+                              bloc: _cubit,
+                              builder: (context, state) {
+                                var currentSpeed =
+                                    state is VideoPlayerChangeSpeed
+                                        ? state.speed
+                                        : _cubit.speed;
+                                final isSelected = speed == currentSpeed;
                                 return GestureDetector(
                                   onTap: () {
                                     setSpeed(speed: speed);
@@ -628,6 +621,10 @@ class _VideoControlsState extends State<VideoControls>
       );
     } else {
       _cubit.isPortrait = true;
+      _cubit.visibilityEpisodesCubit
+          .setVisibilityEpisodesControl(isVisible: false);
+      _cubit.visibilitySpeedsCubit.setVisibilitySpeedsControl(isVisible: false);
+      hideControlsImmediately();
       Navigator.pop(context, _chewieController.isPlaying);
     }
   }
@@ -650,35 +647,36 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void setEpisode({required EpisodeEntity episode}) {
-    _episodesNotifier.value = episode;
     _cubit.changeEpisode(episode: episode);
     //changeOrientation();
   }
 
   @override
   void tapShowEpisodes() {
-    _showEpisodesNotifier.value = true;
+    _cubit.visibilityEpisodesCubit
+        .setVisibilityEpisodesControl(isVisible: true);
   }
 
   @override
   void tapCloseEpisodes() {
-    _showEpisodesNotifier.value = false;
+    _cubit.visibilityEpisodesCubit
+        .setVisibilityEpisodesControl(isVisible: false);
   }
 
   @override
   void setSpeed({required double speed}) {
     _videoPlayerController.setPlaybackSpeed(speed);
-    _speedNotifier.value = speed;
+    _cubit.changeSpeed(speed: speed);
   }
 
   @override
   void tapShowSpeed() {
-    _showSpeedNotifier.value = true;
+    _cubit.visibilitySpeedsCubit.setVisibilitySpeedsControl(isVisible: true);
   }
 
   @override
   void tapCloseSpeed() {
-    _showSpeedNotifier.value = false;
+    _cubit.visibilitySpeedsCubit.setVisibilitySpeedsControl(isVisible: false);
   }
 
   @override
