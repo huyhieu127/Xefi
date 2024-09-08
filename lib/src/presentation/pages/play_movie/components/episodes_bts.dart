@@ -106,7 +106,9 @@ class _EpisodesBtsState extends State<EpisodesBts> {
     final isCurrent = widget.episodeCurrent?.slug == episode.slug;
     return GestureDetector(
       onTap: () {
-        widget.onChangeEpisode(episode);
+        if(!isCurrent) {
+          widget.onChangeEpisode(episode);
+        }
       },
       child: Card(
         elevation: 0,

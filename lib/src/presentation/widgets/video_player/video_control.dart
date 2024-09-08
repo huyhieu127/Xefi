@@ -5,44 +5,24 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
-import 'package:xefi/src/core/utils/extension_utils.dart';
 import 'package:xefi/src/core/utils/screen_utils.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
+import 'package:xefi/src/injector.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/duration_control/duration_control_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/initialized_controller/initial_controller_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/play_control/play_control_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/video_player_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/visibilitity_thumbnail/visibility_thumbnail_cubit.dart';
+import 'package:xefi/src/presentation/cubit/widgets/video_player/visibility_controls/visibility_controls_cubit.dart';
+import 'package:xefi/src/presentation/widgets/video_player/frame_video_player.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_control_gestures.dart';
-import 'package:xefi/src/presentation/widgets/video_player/video_player_fullscreen.dart';
 
 class VideoControls extends StatefulWidget {
-  VideoControls({
-    super.key,
-  });
-
-  late ChewieController chewieController;
-  late VideoPlayerController videoPlayerController;
-  bool isBindController = false;
-  late String thumbUrl;
-  late EpisodeEntity episode;
-  late List<ServerEntity> servers;
-  late Function(EpisodeEntity) onChangeEpisode;
-
-  void bindUI({
-    required VideoPlayerController videoPlayerController,
-    required ChewieController chewieController,
-    required String thumbUrl,
-    required EpisodeEntity episode,
-    required List<ServerEntity> servers,
-    required Function(EpisodeEntity) onChangeEpisode,
-  }) {
-    this.videoPlayerController = videoPlayerController;
-    this.chewieController = chewieController;
-    isBindController = true;
-    this.thumbUrl = thumbUrl;
-    this.episode = episode;
-    this.servers = servers;
-    this.onChangeEpisode = onChangeEpisode;
-  }
+  const VideoControls({super.key});
 
   @override
   State<VideoControls> createState() => _VideoControlsState();
@@ -50,24 +30,23 @@ class VideoControls extends StatefulWidget {
 
 class _VideoControlsState extends State<VideoControls>
     implements VideoControlGestures {
+  VideoPlayerCubit get _cubit => injector<VideoPlayerCubit>();
+
   VideoPlayerController get _videoPlayerController =>
-      widget.videoPlayerController;
+      _cubit.videoPlayerController;
 
-  ChewieController get _chewieController => widget.chewieController;
+  ChewieController get _chewieController => _cubit.chewieController;
 
-  get _isBindController => widget.isBindController;
+  String get _thumbUrl => _cubit.thumbUrl;
 
-  bool get _isPortrait => context.orientation() == Orientation.portrait;
+  EpisodeEntity get _episode => _cubit.episode;
 
-  final StreamController<bool> _streamHideThumbnail = StreamController<bool>();
-  final StreamController<bool> _streamPlayStatus = StreamController<bool>();
-  final StreamController<double> _streamVisibleControls =
-      StreamController<double>();
-  bool isVisibleControls = false;
+  List<ServerEntity> get _servers => _cubit.servers;
+
+  bool get _isPortrait => _cubit.isPortrait;
 
   Timer? _timer;
-  final ValueNotifier<Duration?> _positionNotifier =
-      ValueNotifier<Duration?>(null);
+
   final Duration _skipValue = const Duration(seconds: 5);
 
   final ScrollController _scrollEpisodesController = ScrollController();
@@ -79,138 +58,147 @@ class _VideoControlsState extends State<VideoControls>
   final ValueNotifier<bool> _showSpeedNotifier = ValueNotifier(false);
   final ValueNotifier<double> _speedNotifier = ValueNotifier(1);
 
-  late bool _isPlayingWhenOpen;
-
   @override
   void initState() {
-    _isPlayingWhenOpen = _chewieController.isPlaying; //Need for to landscape
     super.initState();
-    _episodesNotifier = ValueNotifier(widget.episode);
+    _episodesNotifier = ValueNotifier(_episode);
     _videoPlayerController.addListener(() {
-      _positionNotifier.value = _videoPlayerController.value.position;
+      final buffered = _videoPlayerController.value.buffered;
+      _cubit.durationControlCubit.updateDuration(
+        position: _videoPlayerController.value.position,
+        duration: _videoPlayerController.value.duration,
+        buffered: buffered.isNotEmpty ? buffered.last.end : Duration.zero,
+      );
     });
   }
 
   @override
   void dispose() {
-    _streamHideThumbnail.close();
-    _streamPlayStatus.close();
-    _streamVisibleControls.close();
     updateWakelockPlus(enable: false);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isBindController) {
-      return const SizedBox();
-    }
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
-      body: StreamBuilder<bool>(
-        stream: _streamHideThumbnail.stream,
-        builder: (context, snapshot) {
-          var isHideThumbnail = (snapshot.data ?? false) || !_isPortrait;
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: _widgetThumbnail(isHideThumbnail: isHideThumbnail),
-              ),
-              Positioned.fill(
-                child: _widgetControls(isHideThumbnail: isHideThumbnail),
-              ),
-              Positioned.fill(
-                right: null,
-                child: _widgetEpisodes(servers: widget.servers),
-              ),
-              Positioned.fill(
-                left: null,
-                child: _widgetSpeeds(speeds: speeds),
-              ),
-            ],
-          );
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<InitialControllerCubit, InitializedControllerState>(
+            bloc: _cubit.initialControllerCubit,
+            listener: (context, state) {
+              if (state is ControllerInitialized) {
+                _cubit.visibilityThumbnailCubit.setVisibilityThumbnail(isVisible: true);
+              }
+            },
+          ),
+        ],
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: _widgetControls(),
+            ),
+            Positioned.fill(
+              child: _widgetThumbnail(),
+            ),
+            Positioned.fill(
+              right: null,
+              child: _widgetEpisodes(servers: _servers),
+            ),
+            Positioned.fill(
+              left: null,
+              child: _widgetSpeeds(speeds: speeds),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   /// Widgets
-  Widget _widgetThumbnail({required bool isHideThumbnail}) {
-    return Visibility(
-      visible: !isHideThumbnail,
-      child: Stack(
-        children: [
-          CachedNetworkImage(
-            imageUrl: widget.thumbUrl,
-            fit: BoxFit.cover,
-            memCacheHeight: 400,
-          ),
-          Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(36),
-              ),
-              height: 72,
-              width: 72,
-              child: IconButton(
-                onPressed: () {
-                  togglePlay();
-                },
-                icon: const Icon(
-                  Icons.play_arrow_rounded,
-                  color: Colors.white,
-                  size: 40,
+  Widget _widgetThumbnail() {
+    return BlocBuilder<VisibilityThumbnailCubit, VisibilityThumbnailState>(
+      bloc: _cubit.visibilityThumbnailCubit,
+      builder: (context, state) {
+        var isVisible = state is VisibilityThumbnail ? state.isVisible : true;
+        print("visibilityThumbnailCubit $isVisible ${state.runtimeType}");
+        return Visibility(
+          visible: isVisible,
+          child: Stack(
+            children: [
+              Center(
+                child: CachedNetworkImage(
+                  imageUrl: _thumbUrl,
+                  fit: BoxFit.cover,
+                  memCacheHeight: 400,
                 ),
               ),
-            ),
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(36),
+                  ),
+                  height: 72,
+                  width: 72,
+                  child: IconButton(
+                    onPressed: () {
+                      togglePlay();
+                    },
+                    icon: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _widgetControls({required bool isHideThumbnail}) {
-    return IgnorePointer(
-      ignoring: !isHideThumbnail,
-      child: StreamBuilder<double>(
-          stream: _streamVisibleControls.stream,
-          builder: (context, snapshot) {
-            var opacity = snapshot.data ?? 0.0;
-            isVisibleControls = opacity == 1.0;
-            return AnimatedOpacity(
-              opacity: opacity,
-              duration: const Duration(milliseconds: 500),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: _widgetControlsCenter(),
-                  ),
-                  Positioned.fill(
-                    bottom: null,
-                    child: _widgetControlsTop(),
-                  ),
-                  Positioned.fill(
-                    top: null,
-                    child: _widgetControlsBottom(),
-                  ),
-                  Positioned.fill(
-                    child: Visibility(
-                      visible: opacity == 0.0,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          tapToVideo();
-                        },
-                      ),
+  Widget _widgetControls() {
+    return BlocBuilder<VisibilityControlsCubit, VisibilityControlsState>(
+        bloc: _cubit.visibilityControlsCubit,
+        builder: (context, state) {
+          final isVisible =
+              state is VisibilityControls ? state.isVisible : false;
+          var opacity = isVisible ? 1.0 : 0.0;
+          return AnimatedOpacity(
+            opacity: opacity,
+            duration: const Duration(milliseconds: 500),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: _widgetControlsCenter(),
+                ),
+                Positioned.fill(
+                  bottom: null,
+                  child: _widgetControlsTop(),
+                ),
+                Positioned.fill(
+                  top: null,
+                  child: _widgetControlsBottom(),
+                ),
+                Positioned.fill(
+                  child: Visibility(
+                    visible: opacity == 0.0,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        tapToVideo();
+                      },
                     ),
                   ),
-                ],
-              ),
-            );
-          }),
-    );
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   Widget _widgetControlsTop() {
@@ -234,7 +222,7 @@ class _VideoControlsState extends State<VideoControls>
               ),
               const SizedBox(width: 8),
               Text(
-                "${widget.episode.name}",
+                "${_episode.name}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -298,16 +286,17 @@ class _VideoControlsState extends State<VideoControls>
                 onPressed: () {
                   togglePlay();
                 },
-                icon: StreamBuilder<bool>(
-                    stream: _streamPlayStatus.stream,
-                    builder: (context, snapshot) {
-                      var isPlay = snapshot.data ?? _isPlayingWhenOpen;
-                      return Icon(
-                        isPlay ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 40,
-                      );
-                    }),
+                icon: BlocBuilder<PlayControlCubit, PlayControlState>(
+                  bloc: _cubit.playControlCubit,
+                  builder: (context, state) {
+                    var isPlay = state is PlayControl && state.isPlaying;
+                    return Icon(
+                      isPlay ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    );
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 60),
@@ -347,12 +336,20 @@ class _VideoControlsState extends State<VideoControls>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const SizedBox(width: 8),
-                ValueListenableBuilder(
-                  valueListenable: _positionNotifier,
-                  builder: (BuildContext context, value, Widget? child) {
-                    final position =
-                        value ?? _videoPlayerController.value.position;
-                    final duration = _videoPlayerController.value.duration;
+                BlocBuilder(
+                  bloc: _cubit.durationControlCubit,
+                  builder: (context, state) {
+                    var position = _videoPlayerController.value.position;
+                    var duration = _videoPlayerController.value.duration;
+
+                    final buffered = _videoPlayerController.value.buffered;
+                    var bufferedDuration = buffered.isNotEmpty ? buffered
+                        .last.end : Duration.zero;
+                    if(state is DurationControl){
+                      position = state.position;
+                      duration = state.duration;
+                      bufferedDuration = state.buffered;
+                    }
                     return _widgetTimestamp(
                       position: position,
                       duration: duration,
@@ -406,10 +403,9 @@ class _VideoControlsState extends State<VideoControls>
             var isShow = _showEpisodesNotifier.value;
             if (isShow) {
               final episodes =
-                  this.widget.servers.first.episodes?.reversed.toList() ?? [];
+                  this._servers.first.episodes?.reversed.toList() ?? [];
               final double position = episodes
-                  .indexWhere(
-                      (entity) => entity.slug == this.widget.episode.slug)
+                  .indexWhere((entity) => entity.slug == this._episode.slug)
                   .toDouble();
               _scrollEpisodesController.jumpTo(position * height);
             }
@@ -615,37 +611,39 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void changeOrientation() async {
-    if (_isPortrait) {
-      final result = await Navigator.push(
+    if (_cubit.isPortrait) {
+      _cubit.isPortrait = false;
+      await Navigator.push(
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              VideoPlayerFullscreen(
-            videoPlayerController: _videoPlayerController,
-            chewieController: _chewieController,
+              _VideoPlayerFullscreen(
+            tapBackWhenInitialVideoController: () {
+              changeOrientation();
+            },
           ),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),
       );
-      if (!context.mounted) return;
-      updatePlayState(isPlaying: result); //Need when back to portrait
     } else {
+      _cubit.isPortrait = true;
       Navigator.pop(context, _chewieController.isPlaying);
     }
   }
 
   @override
   void togglePlay() {
-    _streamHideThumbnail.add(true);
-    showControls();
+    _cubit.visibilityThumbnailCubit.setVisibilityThumbnail(isVisible: false);
     if (_chewieController.isPlaying) {
+      showControls();
       updateWakelockPlus(enable: false);
-      updatePlayState(isPlaying: false);
+      _cubit.playControlCubit.setPlay(isPlay: false);
       _chewieController.pause();
     } else {
+      hideControlsImmediately();
       updateWakelockPlus(enable: true);
-      updatePlayState(isPlaying: true);
+      _cubit.playControlCubit.setPlay(isPlay: true);
       _chewieController.play();
     }
   }
@@ -653,8 +651,8 @@ class _VideoControlsState extends State<VideoControls>
   @override
   void setEpisode({required EpisodeEntity episode}) {
     _episodesNotifier.value = episode;
-    widget.onChangeEpisode(episode);
-    changeOrientation();
+    _cubit.changeEpisode(episode: episode);
+    //changeOrientation();
   }
 
   @override
@@ -718,37 +716,32 @@ class _VideoControlsState extends State<VideoControls>
 
   @override
   void tapToBackgroundCenterControls() {
-    if (!_isPortrait) {
-      hideSystemBars();
-    }
     hideControlsImmediately();
   }
 
   /// Methods
-  void showControls() {
-    if (!_streamVisibleControls.isClosed) {
-      _streamVisibleControls.add(1.0); // Hiện lại widget khi có tương tác
-      _timer?.cancel(); // Hủy bỏ timer hiện tại nếu có
+  void showControls({
+    bool isAutoHide = true,
+  }) {
+    _cubit.visibilityControlsCubit.setVisibilityControls(
+        isVisible: true); // Hiện lại widget khi có tương tác
+    _timer?.cancel(); // Hủy bỏ timer hiện tại nếu có
+    if (isAutoHide) {
       _timer = Timer(const Duration(seconds: 2), () {
-        if (!_streamVisibleControls.isClosed) {
-          if (!_isPortrait) {
-            hideSystemBars();
-          }
-          _streamVisibleControls.add(0.0); // Bắt đầu fade out sau 5 giây
+        if (!_isPortrait) {
+          hideSystemBars();
         }
+        _cubit.visibilityControlsCubit.setVisibilityControls(isVisible: false);
       });
     }
   }
 
   void hideControlsImmediately() {
     _timer?.cancel();
-    if (!_streamVisibleControls.isClosed) {
-      _streamVisibleControls.add(0.0);
+    if (!_isPortrait) {
+      hideSystemBars();
     }
-  }
-
-  void updatePlayState({required bool isPlaying}) {
-    _streamPlayStatus.add(isPlaying);
+    _cubit.visibilityControlsCubit.setVisibilityControls(isVisible: false);
   }
 
   Future<void> updateWakelockPlus({required bool enable}) async {
@@ -774,4 +767,43 @@ String formatDuration({required Duration? duration}) {
   return duration.inHours > 0
       ? "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds"
       : "$twoDigitMinutes:$twoDigitSeconds";
+}
+
+class _VideoPlayerFullscreen extends StatefulWidget {
+  final VoidCallback tapBackWhenInitialVideoController;
+
+  const _VideoPlayerFullscreen(
+      {required this.tapBackWhenInitialVideoController});
+
+  @override
+  State<_VideoPlayerFullscreen> createState() => _VideoPlayerFullscreenState();
+}
+
+class _VideoPlayerFullscreenState extends State<_VideoPlayerFullscreen> {
+  VideoPlayerCubit get _cubit => injector<VideoPlayerCubit>();
+
+  @override
+  void initState() {
+    super.initState();
+    enterFullScreen();
+  }
+
+  @override
+  void dispose() {
+    exitFullScreen();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      body: FrameVideoPlayer(
+        tapBackWhenInitialVideoController: () {
+          widget.tapBackWhenInitialVideoController();
+        },
+      ),
+    );
+  }
 }

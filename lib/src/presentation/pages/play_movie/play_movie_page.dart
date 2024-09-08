@@ -32,6 +32,7 @@ class PlayMoviePage extends StatefulWidget {
 
 class _PlayMoviePageState extends State<PlayMoviePage> {
   final _cubit = injector<PlayMovieCubit>();
+  VideoPlayer? _videoPlayer;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +76,15 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
     final servers = data?.servers ?? [];
     final heightMovie = context.screenSize().width * 9 / 16;
 
+    _videoPlayer = VideoPlayer(
+      episode: episode,
+      thumbUrl: thumbUrl,
+      servers: servers,
+      onChangeEpisode: (episode) {
+        changeEpisode(episode: episode);
+      },
+    );
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -96,11 +106,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
                   pinned: true,
                   delegate: MySliverAppBarDelegate(
                     height: heightMovie, // Set the fixed height here
-                    child: MoviePlayer(
-                      episode: episode,
-                      thumbUrl: thumbUrl,
-                      servers: servers,
-                    ),
+                    child: _videoPlayer!,
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -509,6 +515,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
           servers: servers,
           episodeCurrent: episodeCurrent,
           onChangeEpisode: (episode) {
+            _videoPlayer?.onUpdateEpisode(episode: episode);
             changeEpisode(episode: episode);
             Navigator.pop(context);
           },
