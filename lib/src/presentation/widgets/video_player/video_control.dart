@@ -333,6 +333,7 @@ class _VideoControlsState extends State<VideoControls>
                       position = state.position;
                       duration = state.duration;
                       bufferedDuration = state.buffered;
+                      checkEnd(position: position, duration: duration);
                     }
                     return _widgetTimestamp(
                       position: position,
@@ -645,6 +646,18 @@ class _VideoControlsState extends State<VideoControls>
     }
   }
 
+  void checkEnd({required Duration position, required Duration duration}) {
+    if(position == duration){
+      if (!_cubit.isEnd) {
+        _cubit.isEnd = true;
+        updateWakelockPlus(enable: false);
+        _cubit.playControlCubit.setPlay(isPlay: false);
+      }
+    }else{
+      _cubit.isEnd = false;
+    }
+  }
+
   @override
   void setEpisode({required EpisodeEntity episode}) {
     _cubit.changeEpisode(episode: episode);
@@ -685,7 +698,7 @@ class _VideoControlsState extends State<VideoControls>
     final duration = _videoPlayerController.value.duration.inSeconds;
     final current = _videoPlayerController.value.position.inSeconds;
     var fastForwardValue = current + _skipValue.inSeconds;
-    if (fastForwardValue > duration) {
+    if (fastForwardValue >= duration) {
       fastForwardValue = duration;
     }
     final newPosition = Duration(seconds: fastForwardValue);

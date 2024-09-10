@@ -40,6 +40,7 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
 
   double speed = 1;
   bool isPortrait = true;
+  bool isEnd = false;
 
   //Update data
   void bindData({
@@ -54,7 +55,7 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
 
   void disposeControllers() {
     try {
-      if(videoPlayerController.value.isInitialized) {
+      if (videoPlayerController.value.isInitialized) {
         videoPlayerController.dispose();
         chewieController.dispose();
       }
