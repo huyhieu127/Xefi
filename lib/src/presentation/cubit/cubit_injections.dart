@@ -8,6 +8,7 @@ import 'package:xefi/src/presentation/cubit/home/home_cubit.dart';
 import 'package:xefi/src/presentation/cubit/list_movie/list_movie_cubit.dart';
 import 'package:xefi/src/presentation/cubit/play_movie/get_detail/get_detail_cubit.dart';
 import 'package:xefi/src/presentation/cubit/play_movie/play_movie_cubit.dart';
+import 'package:xefi/src/presentation/cubit/search/search_cubit.dart';
 import 'package:xefi/src/presentation/cubit/widgets/video_player/video_player_cubit.dart';
 import 'package:xefi/src/presentation/cubit/widgets/video_player/injections_video_player.dart';
 
@@ -29,6 +30,9 @@ Future<void> cubitInjections() async {
 
   //ListMovie
   injector.registerFactory<ListMovieCubit>(() => ListMovieCubit(injector()));
+
+  //Search
+  injector.registerFactory<SearchCubit>(() => SearchCubit(injector()));
 
   //PlayMovie
   injector

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/core/helper/box_decoration.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
@@ -13,6 +14,7 @@ import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/play_movie/get_detail/get_detail_cubit.dart';
 import 'package:xefi/src/presentation/cubit/play_movie/play_movie_cubit.dart';
 import 'package:xefi/src/presentation/pages/play_movie/components/episodes_bts.dart';
+import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
 import 'package:xefi/src/presentation/widgets/button_back.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_player.dart';
@@ -53,6 +55,34 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
               final data = state.movieDetailData;
               return _containerPage(
                   data: data, thumbUrl: data?.movie?.thumbUrl ?? "");
+            } else if (state is GetDetailError) {
+              return BaseBackground(
+                baseAppBar: BaseAppbar(
+                  child: SafeArea(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: ButtonBack(
+                          onTap: () {
+                            onBack();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    "Has an error!\n ${state.message}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
             } else {
               return const Center(
                 child: CircularProgressIndicator(
@@ -124,7 +154,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: ButtonBack(
                 onTap: () {
-                  context.router.back();
+                  onBack();
                 },
               ),
             ),
@@ -526,6 +556,10 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
 
   void changeEpisode({required EpisodeEntity episode}) {
     _cubit.changeEpisode(episode: episode);
+  }
+
+  void onBack() {
+    context.router.back();
   }
 }
 

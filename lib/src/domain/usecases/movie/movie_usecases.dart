@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:xefi/src/core/network/exception/network_exception.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
@@ -32,5 +33,17 @@ class MovieUseCases {
     required String slugName,
   }) async {
     return _movieRepository.getDetail(slugName: slugName);
+  }
+
+  Future<Either<NetworkException, MovieGenreDataEntity?>> getSearch({
+    required String keyword,
+    int limit = 10,
+    CancelToken? cancelToken,
+  }) async {
+    return _movieRepository.getSearch(
+      keyword: keyword,
+      limit: limit,
+      cancelToken: cancelToken,
+    );
   }
 }

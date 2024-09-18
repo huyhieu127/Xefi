@@ -23,7 +23,8 @@ class GetDetailCubit extends Cubit<GetDetailState> {
         (error) => emit(GetDetailError(message: error.message)),
         (data) => emit(GetDetailSuccess(movieDetailData: data)),
       );
-    } catch (_) {
+    } catch (ex) {
+      emit(GetDetailError(message: ex.runtimeType.toString()));
       rethrow;
     }
   }

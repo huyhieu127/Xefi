@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:xefi/src/core/network/exception/network_exception.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
@@ -18,8 +19,9 @@ abstract class MovieRepository {
     int limit = 10,
   });
 
-  Future<Either<NetworkException, List<MovieNewestEntity>>> getSearch({
+  Future<Either<NetworkException, MovieGenreDataEntity?>> getSearch({
     required String keyword,
     int limit = 10,
+    CancelToken? cancelToken,
   });
 }

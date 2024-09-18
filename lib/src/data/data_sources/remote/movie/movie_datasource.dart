@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/data/models/export_models.dart';
 
@@ -13,8 +14,9 @@ abstract class MovieDatasource {
     int limit = 10,
   });
 
-  Future<List<MovieNewestResp>> getSearch({
+  Future<MovieGenreDataResp?> getSearch({
     required String keyword,
     int limit = 10,
+    CancelToken? cancelToken,
   });
 }

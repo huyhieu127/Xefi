@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:xefi/src/core/network/config/url_constants.dart';
 import 'package:xefi/src/core/network/dio/dio_client.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
@@ -60,15 +61,24 @@ class MovieDatasourceImpl implements MovieDatasource {
   }
 
   @override
-  Future<List<MovieNewestResp>> getSearch(
-      {required String keyword, int limit = 10}) async {
+  Future<MovieGenreDataResp?> getSearch({
+    required String keyword,
+    int limit = 10,
+    CancelToken? cancelToken,
+  }) async {
     try {
-      final response = await _dioClient
-          .get(UrlConstants.newest, queryParameters: {'page': 1});
-
+      cancelToken?.cancel();
+      cancelToken = CancelToken();
+      final response = await _dioClient.get(
+        UrlConstants.search,
+        queryParameters: {
+          'keyword': keyword,
+          'limit': limit,
+        },
+        cancelToken: cancelToken,
+      );
       final baseResp = BaseResp.fromJson(response.data as Map<String, dynamic>);
-      final listMovies = baseResp.items;
-      return listMovies ?? List.empty();
+      return baseResp.data;
     } catch (_) {
       rethrow;
     }

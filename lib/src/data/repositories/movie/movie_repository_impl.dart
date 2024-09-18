@@ -58,14 +58,19 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<Either<NetworkException, List<MovieNewestEntity>>> getSearch({
+  Future<Either<NetworkException, MovieGenreDataEntity?>> getSearch({
     required String keyword,
     int limit = 10,
+    CancelToken? cancelToken,
   }) async {
     try {
-      final result = await _movieDatasource.getNewest(page: 1);
-      final format = result.map((resp) => resp.toEntity()).toList();
-      return Right(format);
+      final result = await _movieDatasource.getSearch(
+        keyword: keyword,
+        limit: limit,
+        cancelToken: cancelToken,
+      );
+      final data = result?.toEntity();
+      return Right(data);
     } on DioException catch (e) {
       return Left(NetworkException.fromDioError(e));
     }
