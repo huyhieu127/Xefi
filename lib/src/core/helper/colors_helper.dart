@@ -10,6 +10,7 @@ abstract class ColorsHelper {
   static const Color placeholder = Color(0xFFF3F3F3);
   static const Color redPastel = Color(0xFFFF6962);
   static const Color redPastelMelon = Color(0xFFFFA9A9);
+  static const Color lineLight = Color(0xCFF3F3F3);
 
   static List<Color> rainbows = [
     HexColor("4EA2EA"),

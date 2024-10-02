@@ -9,6 +9,7 @@ import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/list_movie/list_movie_cubit.dart';
 import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/button_back.dart';
 import 'package:xefi/src/presentation/widgets/item_movie_grid.dart';
 
@@ -144,9 +145,7 @@ class _ListMoviePageState extends State<ListMoviePage> {
                               padding: const EdgeInsets.all(24),
                               alignment: Alignment.center,
                               height: 200,
-                              child: const CircularProgressIndicator(
-                                color: Colors.red,
-                              ),
+                              child: const BaseCircularPrg(),
                             )
                           : const SizedBox(),
                     ),
@@ -155,9 +154,7 @@ class _ListMoviePageState extends State<ListMoviePage> {
               );
             }
             return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.red,
-              ),
+              child: BaseCircularPrg(),
             );
           },
         ),

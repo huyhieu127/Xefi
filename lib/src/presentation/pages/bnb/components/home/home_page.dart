@@ -1,8 +1,6 @@
-import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:xefi/src/config/router/app_router.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/helper/shadow_helper.dart';
@@ -15,14 +13,14 @@ import 'package:xefi/src/presentation/cubit/home/get_newest/get_newest_cubit.dar
 import 'package:xefi/src/presentation/cubit/home/get_single_movie/get_single_movie_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/get_tv_shows/get_tv_shows_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/home_cubit.dart';
-import 'package:xefi/src/presentation/cubit/cubit_injections.dart';
-import 'package:xefi/src/presentation/pages/home/components/home_genre_animation.dart';
-import 'package:xefi/src/presentation/pages/home/components/home_genre_movie_series.dart';
-import 'package:xefi/src/presentation/pages/home/components/home_genre_single_movie.dart';
-import 'package:xefi/src/presentation/pages/home/components/home_genre_tv_shows.dart';
 import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
+import 'package:xefi/src/presentation/widgets/logo_app.dart';
 
+import 'components/home_genre_animation.dart';
+import 'components/home_genre_movie_series.dart';
+import 'components/home_genre_single_movie.dart';
+import 'components/home_genre_tv_shows.dart';
 import 'components/home_newest.dart';
 
 @RoutePage()
@@ -33,16 +31,20 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return MultiBlocProvider(
       providers: [
         BlocProvider(
             create: (context) => injector<GetNewestCubit>()..getNewest()),
         BlocProvider(
-            create: (context) =>
-                injector<GetAnimationCubit>()..getAnimation()),
+            create: (context) => injector<GetAnimationCubit>()..getAnimation()),
         BlocProvider(
             create: (context) =>
                 injector<GetMovieSeriesCubit>()..getMovieSeries()),
@@ -62,18 +64,21 @@ class _HomePageState extends State<HomePage> {
           physics: BouncingScrollPhysics(
             decelerationRate: ScrollDecelerationRate.fast,
           ),
-          child: Column(
-            children: [
-              HomeNewest(),
-              HomeGenreAnimation(movieGenre: MovieGenre.animation),
-              SizedBox(height: 16),
-              HomeGenreMovieSeries(movieGenre: MovieGenre.movieSeries),
-              SizedBox(height: 16),
-              HomeGenreSingleMovie(movieGenre: MovieGenre.singleMovie),
-              SizedBox(height: 16),
-              HomeGenreTvShows(movieGenre: MovieGenre.tvShows),
-              SizedBox(height: kBottomNavigationBarHeight),
-            ],
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                HomeNewest(),
+                HomeGenreAnimation(movieGenre: MovieGenre.animation),
+                SizedBox(height: 16),
+                HomeGenreMovieSeries(movieGenre: MovieGenre.movieSeries),
+                SizedBox(height: 16),
+                HomeGenreSingleMovie(movieGenre: MovieGenre.singleMovie),
+                SizedBox(height: 16),
+                HomeGenreTvShows(movieGenre: MovieGenre.tvShows),
+                SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
@@ -88,26 +93,7 @@ class _HomePageState extends State<HomePage> {
             Row(
               children: [
                 const SizedBox(width: 16),
-                ShaderMask(
-                    shaderCallback: (rect) {
-                      return const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          ColorsHelper.blue,
-                          ColorsHelper.beige,
-                        ],
-                      ).createShader(rect);
-                    },
-                    blendMode: BlendMode.srcIn,
-                    child: Text(
-                      "X E F I",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 28,
-                        shadows: ShadowHelper.textAppName,
-                      ),
-                    )),
+                const LogoApp(),
                 const Spacer(),
                 Row(
                   children: [
@@ -149,3 +135,4 @@ class _HomePageState extends State<HomePage> {
         ),
       );
 }
+

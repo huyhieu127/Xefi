@@ -4,13 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
-import 'package:xefi/src/presentation/cubit/home/get_movie_series/get_movie_series_cubit.dart';
+import 'package:xefi/src/presentation/cubit/home/get_single_movie/get_single_movie_cubit.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/item_movie_grid.dart';
 
-class HomeGenreMovieSeries extends StatelessWidget {
+class HomeGenreSingleMovie extends StatelessWidget {
   final MovieGenre movieGenre;
 
-  const HomeGenreMovieSeries({super.key, required this.movieGenre});
+  const HomeGenreSingleMovie({super.key, required this.movieGenre});
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +58,9 @@ class HomeGenreMovieSeries extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: BlocBuilder<GetMovieSeriesCubit, GetMovieSeriesState>(
+            child: BlocBuilder<GetSingleMovieCubit, GetSingleMovieState>(
               builder: (context, state) {
-                if (state is GetMovieSeriesSuccess) {
+                if (state is GetSingleMovieSuccess) {
                   final moviesGenreData = state.movieGenreDataEntity;
                   final moviesGenre = moviesGenreData?.movies ?? [];
                   return ListView.separated(
@@ -99,7 +100,7 @@ class HomeGenreMovieSeries extends StatelessWidget {
                 return const Stack(
                   alignment: AlignmentDirectional.center,
                   children: [
-                    CircularProgressIndicator(),
+                    BaseCircularPrg(),
                   ],
                 );
               },
@@ -110,7 +111,7 @@ class HomeGenreMovieSeries extends StatelessWidget {
     );
   }
 
-  String _title() => "Phim bộ";
+  String _title() => "Phim lẻ";
 
   void navigateToListMovie({
     required BuildContext context,

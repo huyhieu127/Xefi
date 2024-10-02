@@ -14,6 +14,7 @@ import 'package:xefi/src/core/utils/extension_utils.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
 import 'package:xefi/src/presentation/cubit/home/get_newest/get_newest_cubit.dart';
 import 'package:xefi/src/presentation/cubit/home/home_cubit.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/base_indicator.dart';
 
 class HomeNewest extends StatefulWidget {
@@ -64,7 +65,7 @@ class _HomeNewestState extends State<HomeNewest> {
             );
           }
           return const Align(
-            child: CircularProgressIndicator(),
+            child: BaseCircularPrg(),
           );
         },
       ),

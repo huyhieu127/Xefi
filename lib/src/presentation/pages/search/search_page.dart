@@ -10,6 +10,7 @@ import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/search/search_cubit.dart';
 import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/button_back.dart';
 import 'package:xefi/src/presentation/widgets/item_movie_grid.dart';
 
@@ -72,9 +73,7 @@ class _SearchPageState extends State<SearchPage> {
               );
             } else if (state is SearchLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.red,
-                ),
+                child: BaseCircularPrg(),
               );
             } else if (state is SearchSuccess) {
               if (state.movies.isEmpty) {
@@ -191,14 +190,12 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
   @override
   void initState() {
     super.initState();
-    print("initState: ${widget.initialValue}");
     _controller.text = widget.initialValue;
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    print("dispose");
     super.dispose();
   }
 

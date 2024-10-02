@@ -4,13 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
-import 'package:xefi/src/presentation/cubit/home/get_single_movie/get_single_movie_cubit.dart';
+import 'package:xefi/src/presentation/cubit/home/get_tv_shows/get_tv_shows_cubit.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/item_movie_grid.dart';
 
-class HomeGenreSingleMovie extends StatelessWidget {
+
+class HomeGenreTvShows extends StatelessWidget {
   final MovieGenre movieGenre;
 
-  const HomeGenreSingleMovie({super.key, required this.movieGenre});
+  const HomeGenreTvShows({super.key, required this.movieGenre});
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +59,9 @@ class HomeGenreSingleMovie extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: BlocBuilder<GetSingleMovieCubit, GetSingleMovieState>(
+            child: BlocBuilder<GetTvShowsCubit, GetTvShowsState>(
               builder: (context, state) {
-                if (state is GetSingleMovieSuccess) {
+                if (state is GetTvShowsSuccess) {
                   final moviesGenreData = state.movieGenreDataEntity;
                   final moviesGenre = moviesGenreData?.movies ?? [];
                   return ListView.separated(
@@ -99,7 +101,7 @@ class HomeGenreSingleMovie extends StatelessWidget {
                 return const Stack(
                   alignment: AlignmentDirectional.center,
                   children: [
-                    CircularProgressIndicator(),
+                    BaseCircularPrg(),
                   ],
                 );
               },
@@ -110,7 +112,7 @@ class HomeGenreSingleMovie extends StatelessWidget {
     );
   }
 
-  String _title() => "Phim lẻ";
+  String _title() => "Chương trình TV";
 
   void navigateToListMovie({
     required BuildContext context,

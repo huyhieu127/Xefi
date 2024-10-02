@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/injector.dart';
 import 'package:xefi/src/presentation/cubit/widgets/video_player/initialized_controller/initial_controller_cubit.dart';
 import 'package:xefi/src/presentation/cubit/widgets/video_player/video_player_cubit.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/button_back.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_control.dart';
 
@@ -51,7 +52,7 @@ class FrameVideoPlayerState extends State<FrameVideoPlayer> {
               child: SizedBox(
                 width: 50,
                 height: 50,
-                child: CircularProgressIndicator(),
+                child: BaseCircularPrg(),
               ),
             ),
             Positioned(

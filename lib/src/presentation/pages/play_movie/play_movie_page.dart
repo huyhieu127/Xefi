@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/core/helper/box_decoration.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
@@ -16,6 +15,7 @@ import 'package:xefi/src/presentation/cubit/play_movie/play_movie_cubit.dart';
 import 'package:xefi/src/presentation/pages/play_movie/components/episodes_bts.dart';
 import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/button_back.dart';
 import 'package:xefi/src/presentation/widgets/video_player/video_player.dart';
 
@@ -85,9 +85,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
               );
             } else {
               return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.red,
-                ),
+                child: BaseCircularPrg(),
               );
             }
           },
@@ -235,56 +233,46 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
                                 color: ColorsHelper.placeholder,
                               ),
                             ),
-                            Expanded(
-                              child: SizedBox(
+                            Flexible(
+                              child: Container(
                                 height: 30,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white12,
-                                    padding: const EdgeInsets.only(
-                                        left: 4, right: 12),
-                                  ),
-                                  onPressed: () {
-                                    final episodeCurrent =
-                                        _cubit.episodeCurrent ??
-                                            servers.first.episodes?.lastOrNull;
-                                    showEpisodes(
-                                      servers: servers,
-                                      episodeCurrent: episodeCurrent,
+                                decoration: BoxDecoration(
+                                  color: Colors.white12,
+                                  borderRadius: BorderRadius.circular(15)
+                                ),
+                                padding: const EdgeInsets.only(
+                                    left: 4, right: 12),
+                                child: BlocBuilder<PlayMovieCubit,
+                                    PlayMovieState>(
+                                  buildWhen: (p, c) =>
+                                      c is PlayMovieInitial ||
+                                      c is PlayMovieChangeEpisode,
+                                  builder: (context, state) {
+                                    String name = "";
+                                    if (state is PlayMovieChangeEpisode) {
+                                      name = state.episode.name ?? "";
+                                    } else {
+                                      name = episodeCurrent?.name ?? "";
+                                    }
+                                    return Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Colors.white,
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     );
                                   },
-                                  child: BlocBuilder<PlayMovieCubit,
-                                      PlayMovieState>(
-                                    buildWhen: (p, c) =>
-                                        c is PlayMovieInitial ||
-                                        c is PlayMovieChangeEpisode,
-                                    builder: (context, state) {
-                                      String name = "";
-                                      if (state is PlayMovieChangeEpisode) {
-                                        name = state.episode.name ?? "";
-                                      } else {
-                                        name = episodeCurrent?.name ?? "";
-                                      }
-                                      return Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.arrow_drop_down,
-                                            color: Colors.white,
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              name,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
                                 ),
                               ),
                             )

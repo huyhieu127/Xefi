@@ -1,17 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
-import 'package:xefi/src/domain/entities/export_entities.dart';
-import 'package:xefi/src/presentation/cubit/home/get_tv_shows/get_tv_shows_cubit.dart';
+import 'package:xefi/src/domain/entities/movie_genre/movie_genre_entity.dart';
+import 'package:xefi/src/presentation/cubit/home/get_animation/get_animation_cubit.dart';
+import 'package:xefi/src/presentation/widgets/base_circular_prg.dart';
 import 'package:xefi/src/presentation/widgets/item_movie_grid.dart';
 
-import '../../../../config/router/app_router.gr.dart';
-
-class HomeGenreTvShows extends StatelessWidget {
+class HomeGenreAnimation extends StatelessWidget {
   final MovieGenre movieGenre;
 
-  const HomeGenreTvShows({super.key, required this.movieGenre});
+  const HomeGenreAnimation({super.key, required this.movieGenre});
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +58,9 @@ class HomeGenreTvShows extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: BlocBuilder<GetTvShowsCubit, GetTvShowsState>(
+            child: BlocBuilder<GetAnimationCubit, GetAnimationState>(
               builder: (context, state) {
-                if (state is GetTvShowsSuccess) {
+                if (state is GetAnimationSuccess) {
                   final moviesGenreData = state.movieGenreDataEntity;
                   final moviesGenre = moviesGenreData?.movies ?? [];
                   return ListView.separated(
@@ -86,12 +86,7 @@ class HomeGenreTvShows extends StatelessWidget {
                         isCinema: item.chieuRap,
                         modifiedTime: item.modified?.time,
                         onTap: () {
-                          if ((item.slug ?? "").isNotEmpty) {
-                            navigateToDetail(
-                              context: context,
-                              movieGenre: item,
-                            );
-                          }
+                          navigateToDetail(context: context, movieGenre: item);
                         },
                       );
                     },
@@ -100,7 +95,7 @@ class HomeGenreTvShows extends StatelessWidget {
                 return const Stack(
                   alignment: AlignmentDirectional.center,
                   children: [
-                    CircularProgressIndicator(),
+                    BaseCircularPrg(),
                   ],
                 );
               },
@@ -111,7 +106,7 @@ class HomeGenreTvShows extends StatelessWidget {
     );
   }
 
-  String _title() => "Chương trình TV";
+  String _title() => "Phim hoạt hình";
 
   void navigateToListMovie({
     required BuildContext context,

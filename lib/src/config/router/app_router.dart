@@ -5,7 +5,20 @@ import 'package:xefi/src/config/router/app_router.gr.dart';
 class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
-        AutoRoute(page: HomeRoute.page, initial: true),
+        CustomRoute(
+          page: SplashRoute.page,
+          initial: true,
+        ),
+        CustomRoute(
+          page: LoginRoute.page,
+          initial: false,
+          transitionsBuilder: TransitionsBuilders.fadeIn,
+        ),
+        CustomRoute(
+          page: BnbRoute.page,
+          initial: false,
+          transitionsBuilder: TransitionsBuilders.fadeIn,
+        ),
         AutoRoute(page: PlayMovieRoute.page, initial: false),
         AutoRoute(page: ListMovieRoute.page, initial: false),
         CustomRoute(
