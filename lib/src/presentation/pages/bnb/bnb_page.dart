@@ -2,9 +2,7 @@ import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:xefi/gen/assets.gen.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
-import 'package:xefi/src/core/utils/extension_utils.dart';
 import 'package:xefi/src/presentation/pages/bnb/components/favorite/favorite_page.dart';
 import 'package:xefi/src/presentation/pages/bnb/components/history/history_page.dart';
 import 'package:xefi/src/presentation/pages/bnb/components/profile/profile_page.dart';

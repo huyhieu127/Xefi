@@ -2,8 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
-import 'package:xefi/src/core/helper/colors_helper.dart';
-import 'package:xefi/src/core/helper/shadow_helper.dart';
 import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/core/utils/extension_utils.dart';
 import 'package:xefi/src/injector.dart';

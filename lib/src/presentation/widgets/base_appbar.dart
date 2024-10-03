@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
-import 'package:xefi/src/core/helper/shadow_helper.dart';
 
 class BaseAppbar extends StatefulWidget implements PreferredSizeWidget {
   final double heightAppear;

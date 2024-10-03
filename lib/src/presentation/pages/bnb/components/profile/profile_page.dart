@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
+import 'package:xefi/src/domain/entities/user/user_entity.dart';
 import 'package:xefi/src/injector.dart';
-import 'package:xefi/src/presentation/widgets/base_appbar.dart';
 import 'package:xefi/src/presentation/widgets/base_background.dart';
 import 'package:xefi/src/presentation/widgets/base_divider_light.dart';
 
@@ -15,30 +17,67 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  UserEntity? get _userEntity => prefs.loadUser();
+
   @override
   Widget build(BuildContext context) {
     return BaseBackground(
-      baseAppBar: const BaseAppbar(
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              "Profile",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-          ),
-        ),
-      ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  children: [
+                    ClipOval(
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        color: Colors.white,
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: _userEntity?.photoURL ?? "",
+                            fit: BoxFit.cover,
+                            memCacheHeight: 100,
+                            width: 72,
+                            height: 72,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _userEntity?.displayName ?? "",
+                            style: const TextStyle(
+                              color: ColorsHelper.placeholder,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                            textAlign: TextAlign.start,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "${_userEntity?.uid}",
+                            style: const TextStyle(
+                              color: ColorsHelper.placeholder,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.start,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
               const BaseDividerLight(),
               _button(
                 label: "Chỉnh sửa thông tin",
@@ -98,7 +137,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  _logout(){
+  _logout() async {
+    await FirebaseAuth.instance.signOut();
     prefs.setLogged(isLogged: false);
     context.router.replace(const LoginRoute());
   }
