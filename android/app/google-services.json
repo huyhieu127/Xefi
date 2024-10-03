@@ -12,7 +12,12 @@
           "package_name": "com.chhstudio.xefi"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "417406597716-k0q50758hl2dofgmaiglbs3tbin7i6id.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCvmkAf2-IA8FwkNuxKx6YTvuDaP5geuGA"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "417406597716-k0q50758hl2dofgmaiglbs3tbin7i6id.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "417406597716-n5r18tha031qruhmggg2aobmoqm620qo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.chhstudio.xefi"
+              }
+            }
+          ]
         }
       }
     }
