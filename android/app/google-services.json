@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417406597716",
+    "project_id": "xefi-1207",
+    "storage_bucket": "xefi-1207.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417406597716:android:9a4e4fc3ee46a8c4eb4bc1",
+        "android_client_info": {
+          "package_name": "com.chhstudio.xefi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvmkAf2-IA8FwkNuxKx6YTvuDaP5geuGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
