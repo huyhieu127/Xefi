@@ -49,14 +49,38 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.417406597716-n5r18tha031qruhmggg2aobmoqm620qo</string>
-			</array>
-		</dict>
-	</array>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <!-- Cấu hình cho Google -->
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.417406597716-n5r18tha031qruhmggg2aobmoqm620qo</string>
+        </array>
+      </dict>
+      <!-- Cấu hình cho Facebook -->
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>fb821730609860044</string>
+        </array>
+      </dict>
+    </array>
+
+    <!-- Cấu hình cho Facebook -->
+    <key>FacebookAppID</key>
+    <string>821730609860044</string>
+    <key>FacebookClientToken</key>
+    <string>a80d291e4bdadbcadcf69df2ea12d0d3</string>
+    <key>FacebookDisplayName</key>
+    <string>Xefi</string>
+
+    <!-- Schemes để tương tác với các ứng dụng của Facebook -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>fbapi</string>
+      <string>fb-messenger-share-api</string>
+    </array>
+
 </dict>
 </plist>
