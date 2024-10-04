@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
@@ -63,6 +64,17 @@ class _LoginPageState extends State<LoginPage> {
                         color: ColorsHelper.black,
                       ),
                     ),
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith(
+                        (states) {
+                          // If the button is pressed, return green, otherwise blue
+                          if (states.contains(WidgetState.pressed)) {
+                            return ColorsHelper.beige;
+                          }
+                          return Colors.white;
+                        },
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
@@ -76,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                           WidgetStateProperty.resolveWith((states) {
                         // If the button is pressed, return green, otherwise blue
                         if (states.contains(WidgetState.pressed)) {
-                          return Colors.green;
+                          return ColorsHelper.navy;
                         }
                         return Colors.blue;
                       }),
@@ -103,13 +115,13 @@ class _LoginPageState extends State<LoginPage> {
         print('User is null');
       } else {
         print('User: $user');
-        _navigateToBnb(user: user);
+        _navigateToBnb(userEntity: gmailToUserEntity(user));
       }
     });
   }
 
-  _navigateToBnb({required User user}) {
-    prefs.saveUser(user: toUserEntity(user));
+  _navigateToBnb({required UserEntity userEntity}) {
+    prefs.saveUser(user: userEntity);
     prefs.setLogged(isLogged: true);
     context.router.replace(const BnbRoute());
   }
@@ -144,8 +156,25 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  _loginWithFacebook() {
-    prefs.setLogged(isLogged: true);
-    context.router.replace(const BnbRoute());
+  Future<void> _loginWithFacebook() async {
+    try {
+      // Thực hiện đăng nhập với Facebook
+      final LoginResult result = await FacebookAuth.instance.login(
+        permissions: ['public_profile', 'email'],
+      );
+
+      if (result.status == LoginStatus.success && result.accessToken != null) {
+        final AccessToken accessToken = result.accessToken!;
+        final user = await facebookToUserEntity(accessToken);
+        _navigateToBnb(userEntity: user);
+      } else {
+        // Đăng nhập không thành công
+        print('Login failed with status: ${result.status}');
+        print('Error message: ${result.message}');
+      }
+    } catch (e) {
+      // Xử lý lỗi nếu có
+      print('Error during Facebook login: $e');
+    }
   }
 }

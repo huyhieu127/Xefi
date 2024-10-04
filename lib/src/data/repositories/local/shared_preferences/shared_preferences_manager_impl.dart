@@ -33,9 +33,6 @@ class SharedPreferencesManagerImpl implements SharedPreferencesManager {
 
   @override
   Future<void> saveUser({required UserEntity? user}) async {
-    if(user == null){
-      return;
-    }
-    await prefs.setString("user", jsonEncode(user.toJson()));
+    await prefs.setString("user", jsonEncode(user?.toJson()));
   }
 }

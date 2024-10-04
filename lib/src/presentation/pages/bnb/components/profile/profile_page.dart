@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
@@ -139,8 +140,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   _logout() async {
+    //Google
     await FirebaseAuth.instance.signOut();
     await GoogleSignIn().signOut();
+    //Facebook
+    await FacebookAuth.instance.logOut();
+    //Remove data
+    prefs.saveUser(user: null);
     prefs.setLogged(isLogged: false);
     context.router.replace(const LoginRoute());
   }
