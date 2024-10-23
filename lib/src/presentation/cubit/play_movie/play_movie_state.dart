@@ -19,3 +19,12 @@ final class PlayMovieChangeEpisode extends PlayMovieState {
   @override
   List<Object> get props => [episode, thumbnailUrl];
 }
+
+final class PlayMovieFavoriteChange extends PlayMovieState {
+  final bool isFavorite;
+
+  const PlayMovieFavoriteChange({required this.isFavorite});
+
+  @override
+  List<Object> get props => [isFavorite];
+}

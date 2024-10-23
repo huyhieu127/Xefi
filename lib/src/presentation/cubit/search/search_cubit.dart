@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:xefi/src/core/network/config/api_constants.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
-import 'package:xefi/src/domain/usecases/movie/movie_usecases.dart';
+import 'package:xefi/src/domain/usecases/network/movie/movie_usecases.dart';
 
 part 'search_state.dart';
 

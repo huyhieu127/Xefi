@@ -41,7 +41,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => _cubit,
+          create: (context) => _cubit..getFavorite(slugName: widget.slug),
         ),
         BlocProvider(
           create: (context) =>
@@ -65,7 +65,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: ButtonBack(
                           onTap: () {
-                            onBack();
+                            _onBack();
                           },
                         ),
                       ),
@@ -152,7 +152,7 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: ButtonBack(
                 onTap: () {
-                  onBack();
+                  _onBack();
                 },
               ),
             ),
@@ -179,22 +179,65 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            Text(
-              "${movie?.name}",
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "${movie?.originName}",
-              style: const TextStyle(
-                color: ColorsHelper.placeholder,
-                //fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${movie?.name}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "${movie?.originName}",
+                        style: const TextStyle(
+                          color: ColorsHelper.placeholder,
+                          //fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    _onFavorite();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                        color: Colors.white12,
+                        borderRadius: BorderRadius.circular(16)),
+                    child: BlocBuilder<PlayMovieCubit, PlayMovieState>(
+                        buildWhen: (p, c) =>
+                            c is PlayMovieInitial ||
+                            c is PlayMovieFavoriteChange,
+                        builder: (context, state) {
+                          var isFavorite = false;
+                          if (state is PlayMovieFavoriteChange) {
+                            isFavorite = state.isFavorite;
+                          }
+                          return Icon(
+                            isFavorite
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_outline_rounded,
+                            color: isFavorite
+                                ? ColorsHelper.redPastel
+                                : Colors.white,
+                          );
+                        }),
+                  ),
+                )
+              ],
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -234,45 +277,54 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
                               ),
                             ),
                             Flexible(
-                              child: Container(
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: Colors.white12,
-                                  borderRadius: BorderRadius.circular(15)
-                                ),
-                                padding: const EdgeInsets.only(
-                                    left: 4, right: 12),
-                                child: BlocBuilder<PlayMovieCubit,
-                                    PlayMovieState>(
-                                  buildWhen: (p, c) =>
-                                      c is PlayMovieInitial ||
-                                      c is PlayMovieChangeEpisode,
-                                  builder: (context, state) {
-                                    String name = "";
-                                    if (state is PlayMovieChangeEpisode) {
-                                      name = state.episode.name ?? "";
-                                    } else {
-                                      name = episodeCurrent?.name ?? "";
-                                    }
-                                    return Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Colors.white,
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.deferToChild,
+                                onTap: () {
+                                  showEpisodes(
+                                    servers: servers,
+                                    episodeCurrent: episodeCurrent,
+                                  );
+                                },
+                                child: Container(
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                      color: Colors.white12,
+                                      borderRadius: BorderRadius.circular(15)),
+                                  padding:
+                                      const EdgeInsets.only(left: 4, right: 20),
+                                  child: BlocBuilder<PlayMovieCubit,
+                                      PlayMovieState>(
+                                    buildWhen: (p, c) =>
+                                        c is PlayMovieInitial ||
+                                        c is PlayMovieChangeEpisode,
+                                    builder: (context, state) {
+                                      String name = "";
+                                      if (state is PlayMovieChangeEpisode) {
+                                        name = state.episode.name ?? "";
+                                      } else {
+                                        name = episodeCurrent?.name ?? "";
+                                      }
+                                      return Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.arrow_drop_down,
+                                            color: Colors.white,
                                           ),
-                                        ),
-                                      ],
-                                    );
-                                  },
+                                          Flexible(
+                                            child: Text(
+                                              name,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             )
@@ -546,8 +598,12 @@ class _PlayMoviePageState extends State<PlayMoviePage> {
     _cubit.changeEpisode(episode: episode);
   }
 
-  void onBack() {
+  void _onBack() {
     context.router.back();
+  }
+
+  void _onFavorite() {
+    _cubit.saveFavorite(slugName: widget.slug);
   }
 }
 

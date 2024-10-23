@@ -35,6 +35,6 @@ Future<void> cubitInjections() async {
 
   //PlayMovie
   injector
-    ..registerFactory<PlayMovieCubit>(() => PlayMovieCubit())
+    ..registerFactory<PlayMovieCubit>(() => PlayMovieCubit(injector()))
     ..registerFactory<GetDetailCubit>(() => GetDetailCubit(injector()));
 }

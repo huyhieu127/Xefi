@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
-import 'package:xefi/src/domain/usecases/movie/movie_usecases.dart';
+import 'package:xefi/src/domain/usecases/network/movie/movie_usecases.dart';
 
 part 'get_newest_state.dart';
 

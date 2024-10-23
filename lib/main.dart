@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:xefi/src/config/notification_handler.dart';
+import 'package:xefi/src/config/notification_manager.dart';
 import 'package:xefi/src/config/router/app_router.dart';
+import 'package:xefi/src/config/router/app_router.gr.dart';
 import 'package:xefi/src/core/helper/colors_helper.dart';
 import 'package:xefi/src/core/utils/datetime_utils.dart';
 import 'package:xefi/src/core/utils/screen_utils.dart';
@@ -24,14 +27,27 @@ Future main() async {
   );
   // Ideal time to initialize
   //await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-  runApp(MyApp());
+  runApp(const MyApp());
   showSystemBars();
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
-  final _appRouter = AppRouter();
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> implements NotificationHandler {
+  late NotificationManager _notificationManager;
+  final _appRouter = injector<AppRouter>();
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationManager = NotificationManager(this);
+    _notificationManager.init();
+  }
 
   // This widget is the root of your application.
   @override
@@ -74,5 +90,19 @@ class MyApp extends StatelessWidget {
       ),
       routerConfig: _appRouter.config(),
     );
+  }
+
+  @override
+  void notificationDirection(data) {
+    print("FirebaseMessaging - navigationDirection: $data");
+    if (data["slug"] != null && data["slug"] != "") {
+      print("FirebaseMessaging - navigateToDetail: $data");
+      _appRouter.push(PlayMovieRoute(slug: data["slug"]));
+    }
+  }
+
+  @override
+  void fcmToken(String token) {
+    print("FirebaseMessaging - fcmToken: $token");
   }
 }

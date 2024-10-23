@@ -5,7 +5,7 @@ import 'package:xefi/src/core/utils/enums/movie_genre.dart';
 import 'package:xefi/src/data/data_sources/remote/movie/movie_datasource.dart';
 import 'package:xefi/src/domain/entities/export_entities.dart';
 import 'package:xefi/src/domain/entities/movie_detail/movie_detail_data_entity.dart';
-import 'package:xefi/src/domain/repositories/movie/movie_repository.dart';
+import 'package:xefi/src/domain/repositories/remote/movie/movie_repository.dart';
 
 class MovieRepositoryImpl implements MovieRepository {
   final MovieDatasource _movieDatasource;

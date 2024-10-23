@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xefi/src/data/repositories/local/shared_preferences/shared_preferences_manager.dart';
 import 'package:xefi/src/domain/entities/user/user_entity.dart';
+import 'package:xefi/src/domain/repositories/shared_preferences/shared_preferences_manager.dart';
 
 class SharedPreferencesManagerImpl implements SharedPreferencesManager {
   final SharedPreferences prefs;
